@@ -20,14 +20,16 @@ import sys
 
 from helper_code import *
 
+
 # Parse arguments.
 def get_parser():
-    description = 'Evaluate the Challenge model.'
+    description = "Evaluate the Challenge model."
     parser = argparse.ArgumentParser(description=description)
-    parser.add_argument('-d', '--data_folder', type=str, required=True)
-    parser.add_argument('-o', '--output_folder', type=str, required=True)
-    parser.add_argument('-s', '--score_file', type=str, required=False)
+    parser.add_argument("-d", "--data_folder", type=str, required=True)
+    parser.add_argument("-o", "--output_folder", type=str, required=True)
+    parser.add_argument("-s", "--score_file", type=str, required=False)
     return parser
+
 
 # Evaluate the models.
 def evaluate_model(data_folder, output_folder):
@@ -36,7 +38,7 @@ def evaluate_model(data_folder, output_folder):
     num_records = len(records)
 
     if num_records == 0:
-        raise FileNotFoundError('No records found.')
+        raise FileNotFoundError("No records found.")
 
     labels = np.zeros(num_records)
     binary_outputs = np.zeros(num_records)
@@ -47,7 +49,7 @@ def evaluate_model(data_folder, output_folder):
         label_filename = os.path.join(data_folder, record)
         label = load_label(label_filename)
 
-        output_filename = os.path.join(output_folder, record + '.txt')
+        output_filename = os.path.join(output_folder, record + ".txt")
         output = load_text(output_filename)
         binary_output = get_label(output, allow_missing=True)
         probability_output = get_probability(output, allow_missing=True)
@@ -71,17 +73,17 @@ def evaluate_model(data_folder, output_folder):
 
     return challenge_score, auroc, auprc, accuracy, f_measure
 
+
 # Run the code.
 def run(args):
     # Compute the scores for the model outputs.
     challenge_score, auroc, auprc, accuracy, f_measure = evaluate_model(args.data_folder, args.output_folder)
 
-    output_string = \
-        f'Challenge score: {challenge_score:.3f}\n' + \
-        f'AUROC: {auroc:.3f}\n' \
-        f'AUPRC: {auprc:.3f}\n' + \
-        f'Accuracy: {accuracy:.3f}\n' \
-        f'F-measure: {f_measure:.3f}\n'
+    output_string = (
+        f"Challenge score: {challenge_score:.3f}\n" + f"AUROC: {auroc:.3f}\n"
+        f"AUPRC: {auprc:.3f}\n" + f"Accuracy: {accuracy:.3f}\n"
+        f"F-measure: {f_measure:.3f}\n"
+    )
 
     # Output the scores to screen and/or a file.
     if args.score_file:
@@ -89,5 +91,6 @@ def run(args):
     else:
         print(output_string)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     run(get_parser().parse_args(sys.argv[1:]))

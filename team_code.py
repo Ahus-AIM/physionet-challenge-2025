@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+#  type: ignore
 # Edit this script to add your team's code. Some functions are *required*, but you can edit most parts of the required functions,
 # change or remove non-required functions, and add your own functions.
 
