@@ -1,0 +1,73 @@
+MODEL:
+  class_path: 'src.model.inception.InceptionNetworkWithDownsampling'
+  KWARGS: {}
+LOAD_MODEL:
+  weights_path: 'src/weights/inception_2025-02-05.pth'
+TRAIN:
+  LR_SCHEDULER:
+    class_path: 'src.utils.CosineToConstantLR'
+    KWARGS:
+      T_max: 10000
+      eta_min_divisor: 10.0
+  CUDNN_BENCHMARK: False
+  COMPILE: False
+  STOPPER:
+    class_path: 'src.utils.EarlyStopper'
+    KWARGS:
+      metric: 'val_loss'
+      patience: 5
+      delta: 0
+  OPTIMIZER:
+    class_path: 'torch.optim.AdamW'
+    KWARGS:
+      lr: 0.00001
+  MIXED_PRECISION_SCALER:
+    class_path: 'torch.amp.GradScaler'
+    KWARGS: {}
+  CRITERION:
+    class_path: 'torch.nn.BCEWithLogitsLoss'
+  KWARGS:
+    epochs: 1
+    device: 'cpu'
+    metrics: []
+    global_metrics:
+      - class_path: 'src.metric.metric.challenge_score'
+      - class_path: 'src.metric.metric.aucroc'
+      - class_path: 'src.metric.metric.aucprc'
+HYPERPARAMETER_SEARCH:
+  SEARCH_SPACE: False
+DATALOADER:
+  class_path: 'torch.utils.data.DataLoader'
+  KWARGS:
+    batch_size: 32
+    shuffle: True
+DATASET:
+  class_path: 'src.dataset.wfdb_dataset.WFDBDataset'
+  KWARGS:
+    max_num_samples: 3000
+  TRAIN:
+    KWARGS:
+      root_dir: '/data/physionet-challenge-2025/code15/code15_wfdb/'
+    TRANSFORM:
+      class_path: 'src.transform.transform.ComposedTransform'
+      KWARGS:
+        transform_config:
+          - class_path: 'src.transform.transform.CenterCrop'
+            KWARGS:
+              size: 2700
+          - class_path: 'src.transform.transform.HighPassButterworth'
+          - class_path: 'src.transform.transform.SoftNormalize'
+          - class_path: 'src.transform.transform.DropChannels'
+  VAL:
+    KWARGS:
+      root_dir: '/data/physionet-challenge-2025/code15/code15_wfdb/'
+    TRANSFORM:
+      class_path: 'src.transform.transform.ComposedTransform'
+      KWARGS:
+        transform_config:
+          - class_path: 'src.transform.transform.CenterCrop'
+            KWARGS:
+              size: 2700
+          - class_path: 'src.transform.transform.HighPassButterworth'
+          - class_path: 'src.transform.transform.SoftNormalize'
+          - class_path: 'src.transform.transform.DropChannels'
