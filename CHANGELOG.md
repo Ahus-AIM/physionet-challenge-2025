@@ -1,6 +1,19 @@
 # CHANGELOG
 
 
+## v0.1.0 (2025-02-05)
+
+### Features
+
+* feat: training and first submission attempt ([`75f3855`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/75f38559b0be95239835415daddf1e49570aaedb))
+
+### Unknown
+
+* Merge pull request #2 from Ahus-AIM/training_code
+
+feat: training and first submission attempt ([`ad17f07`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/ad17f0777c8c7986c1a0237c719ffd4087da62ee))
+
+
 ## v0.0.1 (2025-01-15)
 
 ### Bug Fixes
