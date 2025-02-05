@@ -4,3 +4,8 @@ pandas==2.2.2
 scikit-learn==1.6.0
 wfdb==4.1.2
 h5py==3.12.1
+tqdm==4.67.1
+torch==2.5.1
+ray[data,train,tune]==2.40.0
+yacs==0.1.8
+scipy==1.14.1

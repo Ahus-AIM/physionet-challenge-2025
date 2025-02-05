@@ -9,6 +9,8 @@ import os
 import scipy as sp
 import sys
 import wfdb
+from typing import List, Tuple, Any, Dict
+from numpy.typing import NDArray
 
 ### Challenge variables
 patient_id_string = "# Patient ID:"
@@ -22,7 +24,7 @@ probability_string = "# Chagas probability:"
 
 
 # Find the records in a folder and its subfolders.
-def find_records(folder, header_extension=".hea"):
+def find_records(folder: str, header_extension: str = ".hea") -> List[str]:
     records = set()
     for root, directories, files in os.walk(folder):
         for file in files:
@@ -30,39 +32,39 @@ def find_records(folder, header_extension=".hea"):
             if extension == header_extension:
                 record = os.path.relpath(os.path.join(root, file), folder)[: -len(header_extension)]
                 records.add(record)
-    records = sorted(records)
-    return records
+    records = sorted(records)  # type: ignore
+    return records  # type: ignore
 
 
 # Load the header for a record.
-def load_header(record):
+def load_header(record: str) -> str:
     header_file = get_header_file(record)
     header = load_text(header_file)
     return header
 
 
 # Load the signals for a record.
-def load_signals(record):
+def load_signals(record: str) -> Tuple[NDArray[Any], Dict[str, Any]]:
     signal, fields = wfdb.rdsamp(record)
     return signal, fields
 
 
 # Load the label for a record.
-def load_label(record):
+def load_label(record: str) -> int | float:
     header = load_header(record)
     label = get_label(header)
     return label
 
 
 # Load the probability for a record.
-def load_probability(record):
+def load_probability(record: str) -> float:
     header = load_header(record)
     label = get_probability(header)
     return label
 
 
 # Save the model outputs for a record.
-def save_outputs(output_file, record_name, label, probability):
+def save_outputs(output_file: str, record_name: str, label: int, probability: float) -> str:
     output_string = f"{record_name}\n{label_string} {label}\n{probability_string} {probability}\n"
     save_text(output_file, output_string)
     return output_string
@@ -72,20 +74,20 @@ def save_outputs(output_file, record_name, label, probability):
 
 
 # Load a text file as a string.
-def load_text(filename):
+def load_text(filename: str) -> str:
     with open(filename, "r") as f:
         string = f.read()
     return string
 
 
 # Save a string as a text file.
-def save_text(filename, string):
+def save_text(filename: str, string: str) -> None:
     with open(filename, "w") as f:
         f.write(string)
 
 
 # Get a variable from a string.
-def get_variable(string, variable_name):
+def get_variable(string: str, variable_name: str) -> Tuple[str, bool]:
     variable = ""
     has_variable = False
     for l in string.split("\n"):
@@ -96,7 +98,7 @@ def get_variable(string, variable_name):
 
 
 # Get the header file for a record.
-def get_header_file(record):
+def get_header_file(record: str) -> str:
     if not record.endswith(".hea"):
         header_file = record + ".hea"
     else:
@@ -105,7 +107,7 @@ def get_header_file(record):
 
 
 # Get the signal files for a record.
-def get_signal_files(record):
+def get_signal_files(record: str) -> List[str]:
     header_file = get_header_file(record)
     if os.path.isfile(header_file):
         header = load_text(header_file)
@@ -115,103 +117,110 @@ def get_signal_files(record):
     return signal_files
 
 
+def get_signal_files_from_header(string: str) -> List[str]:
+    signal_files = list()
+    for i, l in enumerate(string.split("\n")):
+        arrs = [arr.strip() for arr in l.split(" ")]
+        if i == 0 and not l.startswith("#"):
+            num_channels = int(arrs[1])
+        elif i <= num_channels and not l.startswith("#"):
+            signal_file = arrs[0]
+            if signal_file not in signal_files:
+                signal_files.append(signal_file)
+        else:
+            break
+    return signal_files
+
+
 # Get the patient ID from a header or a similar string.
-def get_patient_id(string):
+def get_patient_id(string: str) -> str | float:
     patient_id, has_patient_id = get_variable(string, patient_id_string)
     if not has_patient_id:
-        patient_id = float("nan")
+        return float("nan")
     return patient_id
 
 
-# Get the encounter ID from a header or a similar string.
-def get_patient_id(string):
-    encounter_id, has_encounter_id = get_variable(string, encounter_id_string)
-    if not has_encounter_id:
-        encounter_id = float("nan")
-    return encounter_id
-
-
 # Get the age from a header or a similar string.
-def get_age(string):
+def get_age(string: str) -> str | float:
     age, has_age = get_variable(string, age_string)
     if not has_age:
-        age = float("nan")
+        return float("nan")
     elif is_number(age):
-        age = float(age)
+        return float(age)
     return age
 
 
 # Get the sex from a header or a similar string.
-def get_sex(string):
+def get_sex(string: str) -> str | None:
     sex, has_sex = get_variable(string, sex_string)
     if not has_sex:
-        sex = None
+        return None
     return sex
 
 
 # Get the label from a header or a similar string.
-def get_label(string, allow_missing=False):
+def get_label(string: str, allow_missing: bool = False) -> int | float:
     label, has_label = get_variable(string, label_string)
     if not has_label and not allow_missing:
         raise Exception("No label is available: are you trying to load the labels from the held-out data?")
-    label = sanitize_boolean_value(label)
-    return label
+    return_label = sanitize_boolean_value(label)
+    return return_label
 
 
 # Get the probability from a header or a similar string.
-def get_probability(string, allow_missing=False):
+def get_probability(string: str, allow_missing: bool = False) -> float:
     probability, has_probability = get_variable(string, probability_string)
-    if not has_probability and not_allow_missing:
+    if not has_probability and not allow_missing:
         raise Exception("No probability is available: are you trying to load the labels from the held-out data?")
-    probability = sanitize_scalar_value(probability)
-    return probability
+    return_probability: float = sanitize_scalar_value(probability)
+    return return_probability
 
 
 ### WFDB functions
 
 
 # Get the record name from a header file.
-def get_record_name(string):
+def get_record_name(string: str) -> str:
     value = string.split("\n")[0].split(" ")[0].split("/")[0].strip()
     return value
 
 
 # Get the number of signals from a header file.
-def get_num_signals(string):
+def get_num_signals(string: str) -> int | None:
     value = string.split("\n")[0].split(" ")[1].strip()
     if is_integer(value):
-        value = int(value)
+        return_value = int(value)
     else:
-        value = None
-    return value
+        return_value = None
+    return return_value
 
 
 # Get the sampling frequency from a header file.
-def get_sampling_frequency(string):
+def get_sampling_frequency(string: str) -> float | None:
     value = string.split("\n")[0].split(" ")[2].split("/")[0].strip()
     if is_number(value):
-        value = float(value)
+        return_value = float(value)
     else:
-        value = None
-    return value
+        return_value = None
+    return return_value
 
 
 # Get the number of samples from a header file.
-def get_num_samples(string):
+def get_num_samples(string: str) -> int | None:
     value = string.split("\n")[0].split(" ")[3].strip()
     if is_integer(value):
-        value = int(value)
+        return_value = int(value)
     else:
-        value = None
-    return value
+        return_value = None
+    return return_value
 
 
 # Get the signal names from a header file.
-def get_signal_names(string):
+def get_signal_names(string: str) -> List[str]:
     num_signals = get_num_signals(string)
     values = list()
     for i, l in enumerate(string.split("\n")):
-        if 1 <= i <= num_signals:
+        if 1 <= i <= num_signals:  # type: ignore
             value = l.split(" ")[8]
             values.append(value)
     return values
@@ -221,15 +230,15 @@ def get_signal_names(string):
 
 
 # Compute the Challenge score.
-def compute_challenge_score(labels, outputs, max_fraction_positive=0.05):
+def compute_challenge_score(labels: List[int], outputs: List[float], max_fraction_positive: float = 0.05) -> float:
     # Check the data.
     assert len(labels) == len(outputs)
     num_instances = len(labels)
     max_num_positive_instances = int(max_fraction_positive * num_instances)
 
     # Convert the data to NumPy arrays, as needed, for easier indexing.
-    labels = np.asarray(labels, dtype=np.float64)
-    outputs = np.asarray(outputs, dtype=np.float64)
+    labels = np.asarray(labels, dtype=np.float64)  # type: ignore
+    outputs = np.asarray(outputs, dtype=np.float64)  # type: ignore
 
     # Collect the unique output values as the thresholds for the positive and negative classes.
     thresholds = np.unique(outputs)
@@ -247,8 +256,8 @@ def compute_challenge_score(labels, outputs, max_fraction_positive=0.05):
 
     tp[0] = 0
     fp[0] = 0
-    fn[0] = np.sum(labels == 1)
-    tn[0] = np.sum(labels == 0)
+    fn[0] = np.sum(labels == 1)  # type: ignore
+    tn[0] = np.sum(labels == 0)  # type: ignore
 
     # Update the TPs, FPs, FNs, and TNs using the values at the previous threshold.
     i = 0
@@ -274,6 +283,7 @@ def compute_challenge_score(labels, outputs, max_fraction_positive=0.05):
             k = j - 1
             break
 
+    tpr: float
     if tp[k] + fn[k] > 0:
         tpr = tp[k] / (tp[k] + fn[k])
     else:
@@ -283,13 +293,13 @@ def compute_challenge_score(labels, outputs, max_fraction_positive=0.05):
 
 
 # Compute area under the receiver operating characteristic curve (AUROC) and area under the precision recall curve (AUPRC).
-def compute_auc(labels, outputs):
+def compute_auc(labels: List[int], outputs: List[float]) -> Tuple[float, float]:
     assert len(labels) == len(outputs)
     num_instances = len(labels)
 
     # Convert the data to NumPy arrays for easier indexing.
-    labels = np.asarray(labels, dtype=np.float64)
-    outputs = np.asarray(outputs, dtype=np.float64)
+    labels = np.asarray(labels, dtype=np.float64)  # type: ignore
+    outputs = np.asarray(outputs, dtype=np.float64)  # type: ignore
 
     # Collect the unique output values as the thresholds for the positive and negative classes.
     thresholds = np.unique(outputs)
@@ -307,8 +317,8 @@ def compute_auc(labels, outputs):
 
     tp[0] = 0
     fp[0] = 0
-    fn[0] = np.sum(labels == 1)
-    tn[0] = np.sum(labels == 0)
+    fn[0] = np.sum(labels == 1)  # type: ignore
+    tn[0] = np.sum(labels == 0)  # type: ignore
 
     # Update the TPs, FPs, FNs, and TNs using the values at the previous threshold.
     i = 0
@@ -358,7 +368,7 @@ def compute_auc(labels, outputs):
 
 # Compute the binary confusion matrix, where the columns are the expert labels and the rows are the classifier labels for the given
 # classes.
-def compute_confusion_matrix(labels, outputs):
+def compute_confusion_matrix(labels: List[int], outputs: List[int]) -> NDArray[Any]:
     assert np.shape(labels) == np.shape(outputs)
     num_instances = len(labels)
 
@@ -379,11 +389,12 @@ def compute_confusion_matrix(labels, outputs):
 
 
 # Compute accuracy.
-def compute_accuracy(labels, outputs):
+def compute_accuracy(labels: List[int], outputs: List[int]) -> float:
     # Compute the confusion matrix.
     A = compute_confusion_matrix(labels, outputs)
 
     # Compute accuracy.
+    accuracy: float
     if np.sum(A) > 0:
         accuracy = np.trace(A) / np.sum(A)
     else:
@@ -393,7 +404,7 @@ def compute_accuracy(labels, outputs):
 
 
 # Compute macro F-measure.
-def compute_f_measure(labels, outputs):
+def compute_f_measure(labels: List[int], outputs: List[int]) -> float:
     # Compute the confusion matrix.
     A = compute_confusion_matrix(labels, outputs)
 
@@ -407,7 +418,7 @@ def compute_f_measure(labels, outputs):
 
 
 # Normalize the channel names.
-def normalize_names(names_ref, names_est):
+def normalize_names(names_ref: List[str], names_est: List[str]) -> List[str]:
     tmp = list()
     for a in names_est:
         for b in names_ref:
@@ -418,7 +429,7 @@ def normalize_names(names_ref, names_est):
 
 
 # Reorder channels in signal.
-def reorder_signal(input_signal, input_channels, output_channels):
+def reorder_signal(input_signal: NDArray[Any], input_channels: List[str], output_channels: List[str]) -> NDArray[Any]:
     # Do not allow repeated channels with potentially different values in a signal.
     assert len(set(input_channels)) == len(input_channels)
     assert len(set(output_channels)) == len(output_channels)
@@ -446,7 +457,7 @@ def reorder_signal(input_signal, input_channels, output_channels):
 
 
 # Remove any single or double quotes; parentheses, braces, and brackets (for singleton arrays); and spaces and tabs from a string.
-def remove_extra_characters(x):
+def remove_extra_characters(x: str) -> str:
     x = str(x)
     x = x.replace('"', "").replace("'", "")
     x = x.replace("(", "").replace(")", "").replace("[", "").replace("]", "").replace("{", "").replace("}", "")
@@ -456,7 +467,7 @@ def remove_extra_characters(x):
 
 
 # Check if a variable is a number or represents a number.
-def is_number(x):
+def is_number(x: str) -> bool:
     try:
         float(x)
         return True
@@ -465,31 +476,34 @@ def is_number(x):
 
 
 # Check if a variable is an integer or represents an integer.
-def is_integer(x):
+def is_integer(x: str) -> bool:
     if is_number(x):
-        return float(x).is_integer()
+        isnumber: bool = float(x).is_integer()
+        return isnumber
     else:
         return False
 
 
 # Check if a variable is a finite number or represents a finite number.
-def is_finite_number(x):
+def is_finite_number(x: str) -> bool:
     if is_number(x):
-        return np.isfinite(float(x))
+        isfinite: bool = np.isfinite(float(x))
+        return isfinite
     else:
         return False
 
 
 # Check if a variable is a NaN, i.e., not a number, or represents a NaN.
-def is_nan(x):
+def is_nan(x: str) -> bool:
     if is_number(x):
-        return np.isnan(float(x))
+        isnan: bool = np.isnan(float(x))
+        return isnan
     else:
         return False
 
 
 # Check if a variable is a boolean or represents a boolean.
-def is_boolean(x):
+def is_boolean(x: str) -> bool:
     if (is_number(x) and float(x) == 0) or (remove_extra_characters(x).casefold() in ("false", "f", "no", "n")):
         return True
     elif (is_number(x) and float(x) == 1) or (remove_extra_characters(x).casefold() in ("true", "t", "yes", "y")):
@@ -499,7 +513,7 @@ def is_boolean(x):
 
 
 # Sanitize integer values.
-def sanitize_integer_value(x):
+def sanitize_integer_value(x: str) -> int | float:
     x = remove_extra_characters(x)
     if is_integer(x):
         return int(float(x))
@@ -508,7 +522,7 @@ def sanitize_integer_value(x):
 
 
 # Sanitize scalar values.
-def sanitize_scalar_value(x):
+def sanitize_scalar_value(x: str) -> float:
     x = remove_extra_characters(x)
     if is_number(x):
         return float(x)
@@ -517,7 +531,7 @@ def sanitize_scalar_value(x):
 
 
 # Sanitize boolean values.
-def sanitize_boolean_value(x):
+def sanitize_boolean_value(x: str) -> int | float:
     x = remove_extra_characters(x)
     if (is_number(x) and float(x) == 0) or (remove_extra_characters(x).casefold() in ("false", "f", "no", "n")):
         return 0

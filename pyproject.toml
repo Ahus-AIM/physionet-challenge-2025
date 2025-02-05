@@ -15,11 +15,18 @@ line-length = 120
 
 [tool.mypy]
 strict = true
-exclude = "(run_model.py|train_model.py|evaluate_model.py|helper_code.py|prepare_code15_data.py)"
+exclude = "(run_model.py|train_model.py|evaluate_model.py|prepare_code15_data.py)"
 
 [[tool.mypy.overrides]]
 module = [
     "yacs.*",
     "setuptools.*",
+    "wfdb",
+    "sklearn.metrics",
+    "scipy.*",
+    "numpy.*",
+    "pandas.*",
+    "h5py.*",
+    "tqdm.*",
 ]
 ignore_missing_imports = true
