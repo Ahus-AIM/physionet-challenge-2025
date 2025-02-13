@@ -1,6 +1,27 @@
 # CHANGELOG
 
 
+## v0.1.1 (2025-02-13)
+
+### Bug Fixes
+
+* fix: search for files recursively in wfdb dataset ([`b54a3e3`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/b54a3e339d883367dda40a23da5d84d8f3e2a8ac))
+
+### Documentation
+
+* docs:  add authors ([`b3460f3`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/b3460f384997c3a256344c06893c71e7610d94e5))
+
+### Unknown
+
+* Merge pull request #4 from Ahus-AIM/recursive_dataloading
+
+fix: search for files recursively in wfdb dataset ([`bf5ccd5`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/bf5ccd559d1e6f898ec9b25c1052865a9ee46c51))
+
+* Merge pull request #3 from Ahus-AIM/authors
+
+docs:  add authors ([`289cb71`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/289cb7151199ab7c44687941a3b587c96e6deadc))
+
+
 ## v0.1.0 (2025-02-05)
 
 ### Features
