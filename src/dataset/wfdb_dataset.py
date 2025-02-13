@@ -20,16 +20,14 @@ class WFDBDataset(Dataset[Tuple[torch.Tensor, torch.Tensor]]):
 
     def _gather_records(self, directory: str) -> None:
         """Recursively searches for .hea files and stores their corresponding records and labels."""
-        root = directory
-        files = os.listdir(directory)
-        files = [file for file in files if file.endswith(".hea")]
+        files: List[str] = []
+        for root, _, filenames in os.walk(directory):
+            files.extend(os.path.join(root, file) for file in filenames if file.endswith(".hea"))
         if self.max_num_samples:
             files = files[: self.max_num_samples]
         for file in tqdm(files, desc="Processing files"):
             record_name = os.path.splitext(file)[0]
-            record_path = os.path.join(root, record_name)
-
-            self.records.append(record_path)
+            self.records.append(record_name)
 
     def __len__(self) -> int:
         return len(self.records)
