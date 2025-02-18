@@ -1,6 +1,27 @@
 # CHANGELOG
 
 
+## v0.2.0 (2025-02-18)
+
+### Continuous Integration
+
+* ci: set up submission workflow ([`3a1b5c4`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/3a1b5c4c8fb6b6301aa6af3e965af0407c1d000b))
+
+### Features
+
+* feat: implement resampling ([`cac5b83`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/cac5b83d97e965c322a306c8a725e16e221bbce5))
+
+### Unknown
+
+* Merge pull request #6 from Ahus-AIM/resampling
+
+feat: implement resampling ([`d732501`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/d7325013423521d8b8623ca160f654b9f9fe1faa))
+
+* Merge pull request #5 from Ahus-AIM/dockerize
+
+Dockerize ([`62bd8c7`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/62bd8c7832cd379bdaaff2d7112f94eaf7169b10))
+
+
 ## v0.1.1 (2025-02-13)
 
 ### Bug Fixes
