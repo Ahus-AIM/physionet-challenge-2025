@@ -2,25 +2,45 @@ import torch
 import numpy as np
 from typing import Tuple, Any
 from numpy.typing import NDArray
-from scipy.signal import butter, lfilter
+from scipy.signal import butter, lfilter, resample_poly
 
 from helper_code import load_header, get_sampling_frequency, load_signals, reorder_signal, get_signal_names
 
 
-def bandpass_filter(
-    signal: NDArray[Any], rate: float, lowcut: float, highcut: float, pad_len: int = 2048
+def bandpass_and_resample(
+    signal: NDArray[Any], rate: float, target_rate: float, lowcut: float, highcut: float
 ) -> NDArray[Any]:
     """
-    Bandpass filter the data between lowcut and highcut.
+    Bandpass filter the data between lowcut and highcut, and then resample to target_rate.
     """
-    padded_signal = np.pad(signal, pad_len, mode="reflect")
+    padded_signal = np.concatenate([signal[:, ::-1], signal, signal[:, ::-1]], axis=1)
     nyquist = 0.5 * rate
     low = lowcut / nyquist
     high = highcut / nyquist
+
+    if low < 0.0:
+        print(f"Lowcut {lowcut} is too low for the sampling frequency {rate}. Setting to 0.0.")
+        low = 1e-5
+    if high > 1.0:
+        print(f"Highcut {highcut} is too high for the sampling frequency {rate}. Setting to 1.0.")
+        high = 1 - 1e-5
+
     b, a = butter(1, [low, high], btype="band")
-    padded_filtered = lfilter(b, a, padded_signal, axis=0)
-    filtered: NDArray[Any] = padded_filtered[pad_len:-pad_len]
-    return filtered
+    padded_filtered = lfilter(b, a, padded_signal, axis=1)
+
+    resampled_signal: NDArray[Any]
+    if rate == target_rate:
+        signal_length = padded_filtered.shape[1] // 3
+        resampled_signal = padded_filtered[:, signal_length : 2 * signal_length]
+        return resampled_signal
+    else:  # Resample using polyphase filtering
+        up = int(target_rate)
+        down = int(rate)
+        padded_resampled = resample_poly(padded_filtered, up, down, axis=1)
+
+        signal_length = padded_resampled.shape[1] // 3
+        resampled_signal = padded_resampled[:, signal_length : 2 * signal_length]
+        return resampled_signal
 
 
 def detect_zero_padding(signal: NDArray[Any]) -> Tuple[int, int]:
@@ -47,10 +67,6 @@ def reorder_channels(signal: NDArray[Any], header: str) -> NDArray[Any]:
     return signal
 
 
-def resample_signal(signal: NDArray[Any], rate: float, target_rate: float) -> NDArray[Any]:
-    raise NotImplementedError("Resampling is not implemented yet.")
-
-
 def drop_channels(signal: NDArray[Any], num_target_channels: int) -> NDArray[Any]:
     return signal[-num_target_channels:]
 
@@ -64,22 +80,18 @@ def process_signal(signal: NDArray[Any], header: str) -> NDArray[Any]:
     first_nonzero, last_nonzero = detect_zero_padding(signal)
     signal = signal[:, first_nonzero:last_nonzero]
 
-    # Bandpass filter the signal
+    # Bandpass and resample filter the signal
+    rate: float = get_sampling_frequency(header)  # type: ignore
+    target_rate: float = 400.0
     lowcut: float = 0.5
     highcut: float = 150.0
-    rate: float = get_sampling_frequency(header) or 400.0  # NOTE should we use 400.0 as default rate or throw an error?
-    signal = bandpass_filter(signal, rate, lowcut, highcut)
+    signal = bandpass_and_resample(signal, rate, target_rate, lowcut, highcut)
 
     # Normalize the signal
     signal = normalize_signal(signal)
 
     # Ensure the channels are always in the same order
     signal = reorder_channels(signal, header)
-
-    # Resample the signal if needed
-    target_rate: float = 400.0
-    if not np.all(np.isclose(rate, target_rate, atol=10.0)):
-        signal = resample_signal(signal, rate, target_rate)
 
     return signal
 
