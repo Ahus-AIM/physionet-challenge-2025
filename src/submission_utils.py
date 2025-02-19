@@ -43,11 +43,14 @@ def bandpass_and_resample(
         return resampled_signal
 
 
-def detect_zero_padding(signal: NDArray[Any]) -> Tuple[int, int]:
+def detect_zero_padding(signal: NDArray[Any]) -> Tuple[int, int, bool]:
     stddev = np.std(signal, axis=0)
-    first_nonzero = int(np.min(np.nonzero(stddev)))
-    last_nonzero = int(np.max(np.nonzero(stddev)))
-    return first_nonzero, last_nonzero
+    nonzero_indices = np.nonzero(stddev)
+    if len(nonzero_indices) == 0:
+        return 0, signal.shape[1], False
+    first_nonzero = int(np.min(nonzero_indices))
+    last_nonzero = int(np.max(nonzero_indices)) + 1
+    return first_nonzero, last_nonzero, True
 
 
 def normalize_signal(signal: NDArray[Any]) -> NDArray[Any]:
@@ -71,13 +74,13 @@ def drop_channels(signal: NDArray[Any], num_target_channels: int) -> NDArray[Any
     return signal[-num_target_channels:]
 
 
-def process_signal(signal: NDArray[Any], header: str) -> NDArray[Any]:
+def process_signal(signal: NDArray[Any], header: str) -> Tuple[NDArray[Any], bool]:
     assert (
         signal.shape[1] > signal.shape[0]
     ), f"The signal should have more columns than rows but has shape {signal.shape}"
 
     # Crop the signal if there is zero padding
-    first_nonzero, last_nonzero = detect_zero_padding(signal)
+    first_nonzero, last_nonzero, signal_has_values = detect_zero_padding(signal)
     signal = signal[:, first_nonzero:last_nonzero]
 
     # Bandpass and resample filter the signal
@@ -93,14 +96,14 @@ def process_signal(signal: NDArray[Any], header: str) -> NDArray[Any]:
     # Ensure the channels are always in the same order
     signal = reorder_channels(signal, header)
 
-    return signal
+    return signal, signal_has_values
 
 
 def classify_from_record(record: str, model: torch.nn.Module) -> Tuple[int, float]:
     header: str = load_header(record)
     signal, _ = load_signals(record)
 
-    signal = process_signal(signal.T, header)
+    signal, signal_has_values = process_signal(signal.T, header)
     signal = drop_channels(signal, model.num_in_channels)
     signal_tensor = torch.tensor(signal, dtype=torch.float32).unsqueeze(0)
 
@@ -109,5 +112,9 @@ def classify_from_record(record: str, model: torch.nn.Module) -> Tuple[int, floa
 
     probability_threshold = 0.5
     binary_output = int(probability_output > probability_threshold)
+
+    if not signal_has_values:
+        probability_output = 0.0
+        binary_output = 0
 
     return binary_output, probability_output
