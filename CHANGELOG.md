@@ -1,6 +1,21 @@
 # CHANGELOG
 
 
+## v0.2.1 (2025-02-19)
+
+### Bug Fixes
+
+* fix: return text for binary output ([`02fa2ee`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/02fa2ee11ef5affe8d4d23e3cc7a7972e8dbc971))
+
+* fix: do not crash on all zero signal ([`de6275c`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/de6275c006b6b923505e83e760d41b79d04614f9))
+
+### Unknown
+
+* Merge pull request #7 from Ahus-AIM/padding_detection
+
+Padding detection ([`7d918dd`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/7d918ddb59d271dd69518d758c4c6302ec12346e))
+
+
 ## v0.2.0 (2025-02-18)
 
 ### Continuous Integration
