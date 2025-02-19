@@ -55,10 +55,12 @@ def load_model(model_folder: str, verbose: bool) -> torch.nn.Module:
 
 # Run your trained model. This function is *required*. You should edit this function to add your code, but do *not* change the
 # arguments of this function.
-def run_model(record: str, model: torch.nn.Module, verbose: str) -> Tuple[int, float]:
+def run_model(record: str, model: torch.nn.Module, verbose: str) -> Tuple[str, float]:
     binary_output, probability_output = classify_from_record(record, model)
+
+    binary_output_str = "# Chagas label: False" if binary_output == 0 else "# Chagas label: True"
 
     if verbose:
         print(f"Binary output: {binary_output}, Probability output: {probability_output}")
 
-    return binary_output, probability_output
+    return binary_output_str, probability_output
