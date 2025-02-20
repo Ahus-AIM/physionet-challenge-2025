@@ -45,8 +45,9 @@ def bandpass_and_resample(
 
 def detect_zero_padding(signal: NDArray[Any]) -> Tuple[int, int, bool]:
     stddev = np.std(signal, axis=0)
-    nonzero_indices = np.nonzero(stddev)
-    if len(nonzero_indices) == 0:
+    nonzero_indices = np.nonzero(stddev)[0]
+    if len(nonzero_indices) < 100:
+        print("The signal is all zeros...")
         return 0, signal.shape[1], False
     first_nonzero = int(np.min(nonzero_indices))
     last_nonzero = int(np.max(nonzero_indices)) + 1
@@ -56,6 +57,7 @@ def detect_zero_padding(signal: NDArray[Any]) -> Tuple[int, int, bool]:
 def normalize_signal(signal: NDArray[Any]) -> NDArray[Any]:
     mean = np.mean(signal, axis=1, keepdims=True)
     std = np.std(signal, axis=1, keepdims=True)
+    std = np.clip(std, a_min=1e-5, a_max=None)
     signal = (signal - mean) / std
     return signal
 
