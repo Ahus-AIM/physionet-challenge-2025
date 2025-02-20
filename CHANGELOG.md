@@ -1,6 +1,25 @@
 # CHANGELOG
 
 
+## v0.2.2 (2025-02-20)
+
+### Bug Fixes
+
+* fix: return bool instead of str ([`3812992`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/38129929529a0e30a4076c0917dd35f2df82ec73))
+
+* fix: do not crash on all zero input ([`da36fc4`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/da36fc41abf5d281f6cfe1805ee4d1b1ff6b0a44))
+
+### Testing
+
+* test: add edge case with all zeros ([`cd58826`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/cd588260c90baf078c3366049857fc84bb027e94))
+
+### Unknown
+
+* Merge pull request #8 from Ahus-AIM/padding_detection
+
+Padding detection ([`07267d3`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/07267d39af18752aaa77a1d002de3fc338730b1d))
+
+
 ## v0.2.1 (2025-02-19)
 
 ### Bug Fixes
