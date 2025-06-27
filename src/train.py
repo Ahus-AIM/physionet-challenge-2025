@@ -96,7 +96,7 @@ def run_epoch(
                     lr_scheduler.step()
 
             total_loss += loss.item()
-            num_cases += predictors.shape[0]
+            num_cases += 1
 
             if epoch:
                 max_epochs_str = f"/{max_epochs}" if max_epochs else ""
@@ -124,8 +124,9 @@ def train(
     if not isinstance(device, torch.device):
         device = torch.device(device)
 
-    print(f"Training model:\n {model}")
     print(f"Trainable model parameters: {sum(p.numel() for p in model.parameters() if p.requires_grad)}")
+    print(f"Batches in train dataloader: {len(train_dataloader)}")
+    print(f"Batches in val dataloader: {len(val_dataloader)}")
     model.to(device)
 
     running_train_losses = []
@@ -263,13 +264,7 @@ def load_and_train(ray_config: CN, config: CN) -> torch.nn.Module:
     train_fn = train
 
     if config.TRAIN.COMPILE:
-        if ray_config and mixed_precision_scaler:
-            print(
-                "Compilation with torch is disabled when using ray and mixed precision scaler as the compiled "
-                "function is not picklable."
-            )
-        else:
-            train_fn = torch.compile(train_fn)
+        model = torch.compile(model)
     train_fn(
         model,
         criterion,
@@ -286,7 +281,6 @@ def load_and_train(ray_config: CN, config: CN) -> torch.nn.Module:
 
 
 def load_hyperparameter_search(config: CN) -> Any | Dict[str, Any]:
-    # TODO: Add support for nested and conditional spaces (https://docs.ray.io/en/latest/tune/faq.html#nested-spaces).
     if "SAMPLE_TYPE" in config:
         return import_class_from_path(config["SAMPLE_TYPE"])(**config["KWARGS"])
 
@@ -333,6 +327,5 @@ def main(config: CN) -> Optional[ExperimentAnalysis]:
 
 if __name__ == "__main__":
     multiprocessing.set_start_method("spawn", force=True)  # CUDA does not support "fork", which is default on linux.
-    cfg = get_cfg("src/config/inception.yml")
+    cfg = get_cfg("src/config/inception_wfdb.yml")
     main(cfg)
-    print(cfg)
