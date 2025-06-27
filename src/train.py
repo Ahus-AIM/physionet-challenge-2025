@@ -1,19 +1,21 @@
-from ray.tune.analysis.experiment_analysis import ExperimentAnalysis
-from src.config.default import get_cfg, merge_cfg
-from src.utils import load_model, get_data_loaders, import_class_from_path
-from tqdm import tqdm
-from ray.train import Checkpoint
-from typing import Any, Tuple, Optional, Dict, List
-from torch import nn
+import multiprocessing
+import os
+import tempfile
 from functools import partial
-from yacs.config import CfgNode as CN
+from typing import Any, Dict, List, Optional, Tuple
+
 import numpy as np
 import ray
-import tempfile
 import torch
-import os
-import multiprocessing
 import torch._dynamo
+from ray.train import Checkpoint
+from ray.tune.analysis.experiment_analysis import ExperimentAnalysis
+from torch import nn
+from tqdm import tqdm
+from yacs.config import CfgNode as CN
+
+from src.config.default import get_cfg, merge_cfg
+from src.utils import get_data_loaders, import_class_from_path, load_model
 
 
 def run_epoch(

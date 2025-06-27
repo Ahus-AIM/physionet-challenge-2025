@@ -1,7 +1,8 @@
+from collections import OrderedDict
+from typing import List
+
 import torch
 import torch.nn as nn
-from typing import List
-from collections import OrderedDict
 
 
 def conv(in_planes: int, out_planes: int, kernel_size: int = 3, stride: int = 1) -> nn.Conv1d:

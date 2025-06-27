@@ -4,12 +4,13 @@
 # These are helper functions that you can use with your code.
 # Check the example code to see how to use these functions in your code.
 
-import numpy as np
 import os
-import scipy as sp
 import sys
+from typing import Any, Dict, List, Tuple
+
+import numpy as np
+import scipy as sp
 import wfdb
-from typing import List, Tuple, Any, Dict
 from numpy.typing import NDArray
 
 ### Challenge variables

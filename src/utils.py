@@ -1,14 +1,15 @@
-import torch.optim.optimizer
-from yacs.config import CfgNode as CN
-from typing import Any, Dict, List, Tuple, Optional
-from copy import deepcopy
-from torch.utils.data import DataLoader
-from torch import nn
-from ray.tune import Stopper
-from collections import defaultdict
 import importlib
 import math
+from collections import defaultdict
+from copy import deepcopy
+from typing import Any, Dict, List, Optional, Tuple
+
 import torch
+import torch.optim.optimizer
+from ray.tune import Stopper
+from torch import nn
+from torch.utils.data import DataLoader
+from yacs.config import CfgNode as CN
 
 
 class EarlyStopper(Stopper):

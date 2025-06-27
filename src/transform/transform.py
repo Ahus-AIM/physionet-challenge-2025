@@ -1,8 +1,10 @@
-import torch
-from src.utils import import_class_from_path
-from typing import List, Dict, Any
-import scipy.signal as signal
+from typing import Any, Dict, List
+
 import numpy as np
+import scipy.signal as signal
+import torch
+
+from src.utils import import_class_from_path
 
 
 class HighPassButterworth(torch.nn.Module):

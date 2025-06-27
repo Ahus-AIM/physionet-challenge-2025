@@ -1,11 +1,12 @@
 import os
-import wfdb
-import torch
-from tqdm import tqdm
-from torch.utils.data import Dataset
+from typing import Any, List, Optional, Tuple
 
-from helper_code import load_text, label_string
-from typing import Optional, Any, Tuple, List
+import torch
+import wfdb
+from torch.utils.data import Dataset
+from tqdm import tqdm
+
+from helper_code import label_string, load_text
 
 
 class WFDBDataset(Dataset[Tuple[torch.Tensor, torch.Tensor]]):

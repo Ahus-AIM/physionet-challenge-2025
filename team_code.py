@@ -1,16 +1,18 @@
 #!/usr/bin/env python
-import torch
 import os
 import sys
+from typing import Tuple
+
+import torch
+from numpy.typing import NDArray
+
+from src.config.default import get_cfg
+from src.submission_utils import classify_from_record
+from src.train import load_and_train
+from src.utils import load_model as load_torch_model
 
 # sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from typing import Tuple
-from src.utils import load_model as load_torch_model
-from src.config.default import get_cfg
-from src.train import load_and_train
-from numpy.typing import NDArray
-from src.submission_utils import classify_from_record
 
 
 # Train your models. This function is *required*. You should edit this function to add your code, but do *not* change the arguments

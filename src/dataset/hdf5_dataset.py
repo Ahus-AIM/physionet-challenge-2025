@@ -1,9 +1,10 @@
+from typing import Any, List, Optional, Tuple
+
 import h5py
-import torch
 import pandas as pd
-from typing import Optional, Any, Tuple, List
+import torch
+from torch.utils.data import DataLoader, Dataset
 from tqdm import tqdm
-from torch.utils.data import Dataset, DataLoader
 
 
 class HDF5InMemoryDataset(Dataset[Tuple[torch.Tensor, torch.Tensor]]):

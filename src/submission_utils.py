@@ -1,10 +1,12 @@
-import torch
+from typing import Any, Tuple
+
 import numpy as np
-from typing import Tuple, Any
+import torch
 from numpy.typing import NDArray
 from scipy.signal import butter, lfilter, resample_poly
 
-from helper_code import load_header, get_sampling_frequency, load_signals, reorder_signal, get_signal_names
+from helper_code import (get_sampling_frequency, get_signal_names, load_header,
+                         load_signals, reorder_signal)
 
 
 def bandpass_and_resample(
