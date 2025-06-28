@@ -48,7 +48,7 @@ def load_model(model_folder: str, verbose: bool) -> torch.nn.Module:
 
     config = get_cfg(config_path)
     model = load_torch_model(config)
-    model.load_weights(weights_path)
+    model.load_weights(weights_path)  # type: ignore
     model.eval()
 
     return model

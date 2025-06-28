@@ -76,7 +76,7 @@ def run_epoch(
 
                     with torch.no_grad():
                         if hasattr(model, "extract_embeddings"):
-                            embeddings.append(model.extract_embeddings(predictors))
+                            embeddings.append(model.extract_embeddings(predictors))  # type: ignore
 
                 loss = criterion(output, target)
 
@@ -103,7 +103,7 @@ def run_epoch(
 
             if epoch and use_tqdm:
                 max_epochs_str = f"/{max_epochs}" if max_epochs else ""
-                iterator.set_description(f"Epoch {epoch + 1}{max_epochs_str}, Loss: {total_loss / num_cases:.4f}")
+                iterator.set_description(f"Epoch {epoch + 1}{max_epochs_str}, Loss: {total_loss / num_cases:.4f}")  # type: ignore
 
     calculated_metrics: Dict[str, float] = {key: float(np.mean(value)) for key, value in stored_metrics.items()}
 
@@ -246,7 +246,7 @@ def load_and_train(ray_config: CN, config: CN) -> torch.nn.Module:
 
     model = load_model(config)
     if hasattr(config, "LOAD_MODEL"):
-        model.load_weights(config.LOAD_MODEL.weights_path)
+        model.load_weights(config.LOAD_MODEL.weights_path)  # type: ignore
 
     optimizer = import_class_from_path(config.TRAIN.OPTIMIZER.class_path)(
         model.parameters(), **config.TRAIN.OPTIMIZER.KWARGS
@@ -269,7 +269,7 @@ def load_and_train(ray_config: CN, config: CN) -> torch.nn.Module:
     train_fn = train
 
     if config.TRAIN.COMPILE:
-        model = torch.compile(model)
+        model = torch.compile(model)  # type: ignore
     train_fn(
         model,
         criterion,
