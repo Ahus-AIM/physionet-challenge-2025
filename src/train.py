@@ -8,7 +8,7 @@ import numpy as np
 import ray
 import torch
 import torch._dynamo
-from ray.train import Checkpoint
+from ray.tune import Checkpoint
 from ray.tune.analysis.experiment_analysis import ExperimentAnalysis
 from torch import nn
 from tqdm import tqdm
@@ -31,6 +31,7 @@ def run_epoch(
     device: str | torch.device = "cpu",
     return_epoch_data: bool = True,
     metric_instances: Optional[List[Any]] = None,
+    use_tqdm: bool = True,
 ) -> Tuple[
     float, int, List[torch.Tensor], List[torch.Tensor], List[torch.Tensor], List[torch.Tensor], Dict[str, float]
 ]:
@@ -53,12 +54,13 @@ def run_epoch(
     predictions = []
     embeddings = []
     targets = []
-    progress_bar = tqdm(dataloader)
-
     metrics = metric_instances or []
     stored_metrics: Dict[str, List[torch.Tensor]] = {metric.__name__: [] for metric in metrics}
 
-    for predictors, target in progress_bar:
+    # When using Ray, tqdm is disabled as we have multiple processes writing to stdout.
+    iterator = tqdm(dataloader) if use_tqdm else dataloader
+
+    for predictors, target in iterator:
         with torch.set_grad_enabled(not eval):
             if optimizer:
                 optimizer.zero_grad()
@@ -98,9 +100,9 @@ def run_epoch(
             total_loss += loss.item()
             num_cases += 1
 
-            if epoch:
+            if epoch and use_tqdm:
                 max_epochs_str = f"/{max_epochs}" if max_epochs else ""
-                progress_bar.set_description(f"Epoch {epoch + 1}{max_epochs_str}, Loss: {total_loss / num_cases:.4f}")
+                iterator.set_description(f"Epoch {epoch + 1}{max_epochs_str}, Loss: {total_loss / num_cases:.4f}")
 
     calculated_metrics: Dict[str, float] = {key: float(np.mean(value)) for key, value in stored_metrics.items()}
 
@@ -172,6 +174,7 @@ def train(
             device=device,
             return_epoch_data=True,
             metric_instances=metrics_per_split[train_split_prefix],
+            use_tqdm=not use_ray,
         )
         running_train_losses.append(train_loss / train_cases)
 
@@ -187,6 +190,7 @@ def train(
             device=device,
             return_epoch_data=True,
             metric_instances=metrics_per_split[val_split_prefix],
+            use_tqdm=not use_ray,
         )
 
         running_val_losses.append(val_loss / val_cases)
@@ -220,12 +224,12 @@ def train(
                 path = os.path.join(temp_checkpoint_dir, "checkpoint.pt")
                 torch.save((model.state_dict(), optimizer.state_dict()), path)
                 checkpoint = Checkpoint.from_directory(temp_checkpoint_dir)
-                ray.train.report(
+                ray.tune.report(
                     results,
                     checkpoint=checkpoint,
                 )
         else:
-            ray.train.report(results)
+            ray.tune.report(results)
 
     print(f"Train losses: {running_train_losses}")
     print(f"Val losses: {running_val_losses}")
@@ -236,7 +240,7 @@ def train(
 def load_and_train(ray_config: CN, config: CN) -> torch.nn.Module:
     if ray_config:
         config = merge_cfg(config, CN(ray_config))
-        with open(os.path.join(ray.train.get_context().get_trial_dir(), "config.yml"), "w") as f:
+        with open(os.path.join(ray.tune.get_context().get_trial_dir(), "config.yml"), "w") as f:
             f.write(config.dump())
 
     model = load_model(config)
@@ -316,7 +320,7 @@ def main(config: CN) -> Optional[ExperimentAnalysis]:
 
     result = ray.tune.run(
         partial(load_and_train, config=config),
-        resources_per_trial={"cpu": 4, "gpu": 1},
+        resources_per_trial={"cpu": 16, "gpu": 1},
         config=ray_config,
         num_samples=1,
         scheduler=scheduler,
