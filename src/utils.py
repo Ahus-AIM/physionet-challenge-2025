@@ -4,11 +4,12 @@ from collections import defaultdict
 from copy import deepcopy
 from typing import Any, Dict, List, Optional, Tuple
 
+import numpy as np
 import torch
 import torch.optim.optimizer
 from ray.tune import Stopper
 from torch import nn
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, Subset
 from yacs.config import CfgNode as CN
 
 
@@ -42,7 +43,6 @@ def get_data_loaders(
     dataset_config: Dict[Any, Any], dataloader_config: Dict[Any, Any]
 ) -> Tuple[DataLoader[Any], DataLoader[Any]]:
     dataset_model = import_class_from_path(dataset_config["class_path"])
-
     dataset_kwargs = dataset_config["KWARGS"]
 
     def get_transform(config: Dict[Any, Any]) -> Any:
@@ -55,6 +55,47 @@ def get_data_loaders(
     transform_train = get_transform(dataset_config.get("TRAIN", {}))
     transform_val = get_transform(dataset_config.get("VAL", {}))
 
+    # Detect k-fold config
+    k_folds = dataset_kwargs.get("k_folds", 1)
+    val_fold = dataset_kwargs.get("val_fold", 0)
+
+    # Instantiate dataset once (avoid double loading) if using k-fold
+    if k_folds > 1:
+        # Merge TRAIN and base KWARGS, but pass transform separately
+        base_kwargs = {**dataset_kwargs, **dataset_config["TRAIN"]["KWARGS"]}
+        base_kwargs.pop("transform", None)  # In case transform is also in base_kwargs
+
+        full_dataset = dataset_model(**base_kwargs, transform=transform_train)
+
+        # Generate indices for k-fold split
+        num_samples = len(full_dataset)
+        indices = np.arange(num_samples)
+        np.random.seed(42)
+        np.random.shuffle(indices)
+        fold_sizes = np.full(k_folds, num_samples // k_folds, dtype=int)
+        fold_sizes[: num_samples % k_folds] += 1
+        folds = []
+        current = 0
+        for fold_size in fold_sizes:
+            folds.append(indices[current : current + fold_size])
+            current += fold_size
+        val_indices = folds[val_fold]
+        train_indices = np.concatenate([folds[i] for i in range(k_folds) if i != val_fold])
+
+        train_subset = Subset(full_dataset, train_indices)
+        # For validation, use the same base dataset but with val transform (if different)
+        # If transforms are different, use Subset with new dataset for val
+        if transform_val is not None and transform_val != transform_train:
+            val_dataset = dataset_model(**base_kwargs, transform=transform_val)
+            val_subset = Subset(val_dataset, val_indices)
+        else:
+            val_subset = Subset(full_dataset, val_indices)
+
+        train_dataloader = DataLoader(train_subset, **dataloader_config)
+        val_dataloader = DataLoader(val_subset, **dataloader_config)
+        return train_dataloader, val_dataloader
+
+    # Fallback: regular, non-kfold loader
     train_dataset = dataset_model(**{**dataset_kwargs, **dataset_config["TRAIN"]["KWARGS"]}, transform=transform_train)
     val_dataset = dataset_model(**{**dataset_kwargs, **dataset_config["VAL"]["KWARGS"]}, transform=transform_val)
 

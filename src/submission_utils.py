@@ -5,8 +5,7 @@ import torch
 from numpy.typing import NDArray
 from scipy.signal import butter, lfilter, resample_poly
 
-from helper_code import (get_sampling_frequency, get_signal_names, load_header,
-                         load_signals, reorder_signal)
+from helper_code import get_sampling_frequency, get_signal_names, load_header, load_signals, reorder_signal
 
 
 def bandpass_and_resample(
