@@ -103,6 +103,16 @@ class CenterCrop(torch.nn.Module):
         return x[:, middle - self.size // 2 : middle + self.size // 2]
 
 
+class RandomCrop(torch.nn.Module):
+    def __init__(self, size: int) -> None:
+        super(RandomCrop, self).__init__()
+        self.size = size
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        start = np.random.randint(0, x.size(1) - self.size + 1)
+        return x[:, start : start + self.size]
+
+
 class DropChannels(torch.nn.Module):
     def __init__(self) -> None:
         super(DropChannels, self).__init__()
