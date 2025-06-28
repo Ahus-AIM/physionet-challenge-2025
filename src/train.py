@@ -10,6 +10,7 @@ import torch
 import torch._dynamo
 from ray.tune import Checkpoint
 from ray.tune.analysis.experiment_analysis import ExperimentAnalysis
+from ray.tune.search.optuna import OptunaSearch
 from torch import nn
 from tqdm import tqdm
 from yacs.config import CfgNode as CN
@@ -318,12 +319,15 @@ def main(config: CN) -> Optional[ExperimentAnalysis]:
     # get different configurations each time you run the script.
     np.random.seed(42)
 
+    search_alg = OptunaSearch(metric="val_loss", mode="min")
+
     result = ray.tune.run(
         partial(load_and_train, config=config),
         resources_per_trial={"cpu": 16, "gpu": 1},
         config=ray_config,
-        num_samples=1,
+        num_samples=20,  # or more, for better results
         scheduler=scheduler,
+        search_alg=search_alg,
         stop=stopper,
     )
     return result  # type: ignore
