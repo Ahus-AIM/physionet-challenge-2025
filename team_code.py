@@ -14,7 +14,6 @@ from src.utils import load_model as load_torch_model
 # sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 
-
 # Train your models. This function is *required*. You should edit this function to add your code, but do *not* change the arguments
 # of this function. If you do not train one of the models, then you can return None for the model.
 def train_model(data_folder: str, model_folder: str, verbose: bool) -> None:
