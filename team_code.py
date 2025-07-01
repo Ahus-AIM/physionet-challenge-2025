@@ -18,7 +18,7 @@ from src.utils import load_model as load_torch_model
 # of this function. If you do not train one of the models, then you can return None for the model.
 def train_model(data_folder: str, model_folder: str, verbose: bool) -> None:
     this_path = os.path.dirname(os.path.realpath(__file__))
-    config_path = os.path.join(this_path, "src/config/inception_wfdb.yml")
+    config_path = os.path.join(this_path, "src/config/inception_wfdb_submission.yml")
     config = get_cfg(config_path)
     config.DATASET.TRAIN.KWARGS["root_dir"] = data_folder
     config.DATASET.VAL.KWARGS["root_dir"] = data_folder
