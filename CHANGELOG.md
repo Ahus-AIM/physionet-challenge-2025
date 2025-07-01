@@ -1,6 +1,65 @@
 # CHANGELOG
 
 
+## v0.3.0 (2025-07-01)
+
+### Bug Fixes
+
+* fix: details for submission code ([`41108c4`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/41108c4f7747928baa2446ad6d93335921fb3f1b))
+
+* fix: update to python 3.12 ([`8cea2d8`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/8cea2d82721240e9720dacf373998c2bdbda3f41))
+
+* fix: do not run submission test on self hosted runner ([`2a71cde`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/2a71cde920569dd6158f3f612aa13e24e153d1ed))
+
+* fix: compile model instead of train fn, make less verbose ([`b758b61`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/b758b6110594116e16121a214b76dd0ce1f0f761))
+
+### Chores
+
+* chore: ensure isort compatible with black ([`227ec04`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/227ec0401914d2ecb9a2c041d4a762a5c3b16f67))
+
+* chore: add linting script ([`bc9b158`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/bc9b15887a33cab567393114d14a2f4942fe6d7e))
+
+* chore: update requirements.txt with latest versions ([`48560e4`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/48560e45ca248fd91fe6a1a4262a1cd3621a29ab))
+
+* chore: add gitignore ([`f607311`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/f607311ea3380ebff4950422efdd6a6543f40e7a))
+
+### Code Style
+
+* style: fix mypy complaints ([`6ce960e`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/6ce960e6372992007dccfd9a714d47b2061feda1))
+
+* style: remove comments ([`dbcf1b9`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/dbcf1b9abed5a4ac230aad4fc9ad617bb584bd8d))
+
+* style: lint team code ([`f65a0ab`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/f65a0ab07331b916aba41c3050cf69461e43cf6e))
+
+* style: apply isort ([`efbdeca`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/efbdecae83ee3afab644df80ee31b9c6a47cf853))
+
+### Features
+
+* feat: bayesian hyperparameter search ([`46314ae`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/46314aea1536d42b58a0ec55dabd15f717c016ab))
+
+* feat: add muon optimizer ([`bef2fe2`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/bef2fe2e3bf1079457cbe7eafc79b0141ace75b7))
+
+* feat: add random cropping transform ([`a919410`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/a919410633c90f111de1848462fe270058faf140))
+
+* feat: disable tqdm when using ray ([`4965ac8`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/4965ac8d064214867225bc878773b577e82f1f4f))
+
+* feat: support for cross-validation ([`a7573ca`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/a7573caf7b28341ffda8db37f29c0e0c99de09d7))
+
+* feat: update experiment plotting code ([`c87ce95`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/c87ce95bea06b1073259561688f6367490d967a2))
+
+* feat: add data preparation script for SaMI-Trop ([`7627564`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/7627564b43d8f907a421ae92772d18cc60f70524))
+
+### Refactoring
+
+* refactor: separate yaml file for submission ([`dfbc4cc`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/dfbc4cc1df039dcb72e2210c90f110da5d7ecd11))
+
+### Unknown
+
+* Merge pull request #9 from Ahus-AIM/full-dataset
+
+Full dataset ([`88a8d70`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/88a8d70e63e875e8a2e920c8c0be18296816c460))
+
+
 ## v0.2.2 (2025-02-20)
 
 ### Bug Fixes
