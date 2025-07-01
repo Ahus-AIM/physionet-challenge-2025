@@ -1,19 +1,22 @@
-from ray.tune.analysis.experiment_analysis import ExperimentAnalysis
-from src.config.default import get_cfg, merge_cfg
-from src.utils import load_model, get_data_loaders, import_class_from_path
-from tqdm import tqdm
-from ray.train import Checkpoint
-from typing import Any, Tuple, Optional, Dict, List
-from torch import nn
+import multiprocessing
+import os
+import tempfile
 from functools import partial
-from yacs.config import CfgNode as CN
+from typing import Any, Dict, List, Optional, Tuple
+
 import numpy as np
 import ray
-import tempfile
 import torch
-import os
-import multiprocessing
 import torch._dynamo
+from ray.tune import Checkpoint
+from ray.tune.analysis.experiment_analysis import ExperimentAnalysis
+from ray.tune.search.optuna import OptunaSearch
+from torch import nn
+from tqdm import tqdm
+from yacs.config import CfgNode as CN
+
+from src.config.default import get_cfg, merge_cfg
+from src.utils import get_data_loaders, import_class_from_path, load_model
 
 
 def run_epoch(
@@ -29,6 +32,7 @@ def run_epoch(
     device: str | torch.device = "cpu",
     return_epoch_data: bool = True,
     metric_instances: Optional[List[Any]] = None,
+    use_tqdm: bool = True,
 ) -> Tuple[
     float, int, List[torch.Tensor], List[torch.Tensor], List[torch.Tensor], List[torch.Tensor], Dict[str, float]
 ]:
@@ -51,12 +55,13 @@ def run_epoch(
     predictions = []
     embeddings = []
     targets = []
-    progress_bar = tqdm(dataloader)
-
     metrics = metric_instances or []
     stored_metrics: Dict[str, List[torch.Tensor]] = {metric.__name__: [] for metric in metrics}
 
-    for predictors, target in progress_bar:
+    # When using Ray, tqdm is disabled as we have multiple processes writing to stdout.
+    iterator = tqdm(dataloader) if use_tqdm else dataloader
+
+    for predictors, target in iterator:
         with torch.set_grad_enabled(not eval):
             if optimizer:
                 optimizer.zero_grad()
@@ -71,7 +76,7 @@ def run_epoch(
 
                     with torch.no_grad():
                         if hasattr(model, "extract_embeddings"):
-                            embeddings.append(model.extract_embeddings(predictors))
+                            embeddings.append(model.extract_embeddings(predictors))  # type: ignore
 
                 loss = criterion(output, target)
 
@@ -94,11 +99,11 @@ def run_epoch(
                     lr_scheduler.step()
 
             total_loss += loss.item()
-            num_cases += predictors.shape[0]
+            num_cases += 1
 
-            if epoch:
+            if epoch and use_tqdm:
                 max_epochs_str = f"/{max_epochs}" if max_epochs else ""
-                progress_bar.set_description(f"Epoch {epoch + 1}{max_epochs_str}, Loss: {total_loss / num_cases:.4f}")
+                iterator.set_description(f"Epoch {epoch + 1}{max_epochs_str}, Loss: {total_loss / num_cases:.4f}")  # type: ignore
 
     calculated_metrics: Dict[str, float] = {key: float(np.mean(value)) for key, value in stored_metrics.items()}
 
@@ -122,8 +127,9 @@ def train(
     if not isinstance(device, torch.device):
         device = torch.device(device)
 
-    print(f"Training model:\n {model}")
     print(f"Trainable model parameters: {sum(p.numel() for p in model.parameters() if p.requires_grad)}")
+    print(f"Batches in train dataloader: {len(train_dataloader)}")
+    print(f"Batches in val dataloader: {len(val_dataloader)}")
     model.to(device)
 
     running_train_losses = []
@@ -169,6 +175,7 @@ def train(
             device=device,
             return_epoch_data=True,
             metric_instances=metrics_per_split[train_split_prefix],
+            use_tqdm=not use_ray,
         )
         running_train_losses.append(train_loss / train_cases)
 
@@ -184,6 +191,7 @@ def train(
             device=device,
             return_epoch_data=True,
             metric_instances=metrics_per_split[val_split_prefix],
+            use_tqdm=not use_ray,
         )
 
         running_val_losses.append(val_loss / val_cases)
@@ -217,12 +225,12 @@ def train(
                 path = os.path.join(temp_checkpoint_dir, "checkpoint.pt")
                 torch.save((model.state_dict(), optimizer.state_dict()), path)
                 checkpoint = Checkpoint.from_directory(temp_checkpoint_dir)
-                ray.train.report(
+                ray.tune.report(
                     results,
                     checkpoint=checkpoint,
                 )
         else:
-            ray.train.report(results)
+            ray.tune.report(results)
 
     print(f"Train losses: {running_train_losses}")
     print(f"Val losses: {running_val_losses}")
@@ -233,12 +241,12 @@ def train(
 def load_and_train(ray_config: CN, config: CN) -> torch.nn.Module:
     if ray_config:
         config = merge_cfg(config, CN(ray_config))
-        with open(os.path.join(ray.train.get_context().get_trial_dir(), "config.yml"), "w") as f:
+        with open(os.path.join(ray.tune.get_context().get_trial_dir(), "config.yml"), "w") as f:
             f.write(config.dump())
 
     model = load_model(config)
     if hasattr(config, "LOAD_MODEL"):
-        model.load_weights(config.LOAD_MODEL.weights_path)
+        model.load_weights(config.LOAD_MODEL.weights_path)  # type: ignore
 
     optimizer = import_class_from_path(config.TRAIN.OPTIMIZER.class_path)(
         model.parameters(), **config.TRAIN.OPTIMIZER.KWARGS
@@ -261,13 +269,7 @@ def load_and_train(ray_config: CN, config: CN) -> torch.nn.Module:
     train_fn = train
 
     if config.TRAIN.COMPILE:
-        if ray_config and mixed_precision_scaler:
-            print(
-                "Compilation with torch is disabled when using ray and mixed precision scaler as the compiled "
-                "function is not picklable."
-            )
-        else:
-            train_fn = torch.compile(train_fn)
+        model = torch.compile(model)  # type: ignore
     train_fn(
         model,
         criterion,
@@ -284,7 +286,6 @@ def load_and_train(ray_config: CN, config: CN) -> torch.nn.Module:
 
 
 def load_hyperparameter_search(config: CN) -> Any | Dict[str, Any]:
-    # TODO: Add support for nested and conditional spaces (https://docs.ray.io/en/latest/tune/faq.html#nested-spaces).
     if "SAMPLE_TYPE" in config:
         return import_class_from_path(config["SAMPLE_TYPE"])(**config["KWARGS"])
 
@@ -318,12 +319,15 @@ def main(config: CN) -> Optional[ExperimentAnalysis]:
     # get different configurations each time you run the script.
     np.random.seed(42)
 
+    search_alg = OptunaSearch(metric="val_loss", mode="min")
+
     result = ray.tune.run(
         partial(load_and_train, config=config),
-        resources_per_trial={"cpu": 4, "gpu": 1},
+        resources_per_trial={"cpu": 16, "gpu": 1},
         config=ray_config,
-        num_samples=1,
+        num_samples=20,  # or more, for better results
         scheduler=scheduler,
+        search_alg=search_alg,
         stop=stopper,
     )
     return result  # type: ignore
@@ -331,6 +335,5 @@ def main(config: CN) -> Optional[ExperimentAnalysis]:
 
 if __name__ == "__main__":
     multiprocessing.set_start_method("spawn", force=True)  # CUDA does not support "fork", which is default on linux.
-    cfg = get_cfg("src/config/inception.yml")
+    cfg = get_cfg("src/config/inception_wfdb.yml")
     main(cfg)
-    print(cfg)

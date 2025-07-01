@@ -1,8 +1,10 @@
-import torch
-from src.utils import import_class_from_path
-from typing import List, Dict, Any
-import scipy.signal as signal
+from typing import Any, Dict, List
+
 import numpy as np
+import scipy.signal as signal
+import torch
+
+from src.utils import import_class_from_path
 
 
 class HighPassButterworth(torch.nn.Module):
@@ -99,6 +101,16 @@ class CenterCrop(torch.nn.Module):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         middle = x.size(1) // 2
         return x[:, middle - self.size // 2 : middle + self.size // 2]
+
+
+class RandomCrop(torch.nn.Module):
+    def __init__(self, size: int) -> None:
+        super(RandomCrop, self).__init__()
+        self.size = size
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        start = np.random.randint(0, x.size(1) - self.size + 1)
+        return x[:, start : start + self.size]
 
 
 class DropChannels(torch.nn.Module):

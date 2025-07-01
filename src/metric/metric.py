@@ -1,6 +1,7 @@
-import torch
-from sklearn.metrics import roc_auc_score, average_precision_score
 from typing import List, Tuple
+
+import torch
+from sklearn.metrics import average_precision_score, roc_auc_score
 
 
 def fix_input(

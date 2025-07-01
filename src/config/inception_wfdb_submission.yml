@@ -2,8 +2,8 @@ MODEL:
   class_path: 'src.model.inception.InceptionNetworkWithDownsampling'
   KWARGS:
     num_out_channels: 32
-# LOAD_MODEL:
-#   weights_path: 'src/weights/inception_2025-02-05.pth'
+LOAD_MODEL:
+  weights_path: 'src/weights/inception_2025-02-05.pth'
 TRAIN:
   LR_SCHEDULER:
     class_path: 'src.utils.CosineToConstantLR'
@@ -21,15 +21,15 @@ TRAIN:
   OPTIMIZER:
     class_path: 'src.optimizer.adammuon.AdamMuon'
     KWARGS:
-      lr: 0.001
+      lr: 0.000001
   MIXED_PRECISION_SCALER:
     class_path: 'torch.amp.GradScaler'
     KWARGS: {}
   CRITERION:
     class_path: 'torch.nn.BCEWithLogitsLoss'
   KWARGS:
-    epochs: 15
-    device: 'cuda'
+    epochs: 1
+    device: 'cpu'
     metrics: []
     global_metrics:
       - class_path: 'src.metric.metric.challenge_score'
@@ -37,33 +37,32 @@ TRAIN:
       - class_path: 'src.metric.metric.aucprc'
 HYPERPARAMETER_SEARCH:
 
-  # SEARCH_SPACE: False
+  SEARCH_SPACE: False
 
-  # ------------- (un)comment to enable hyperparameter search -------------
-  SEARCH_SPACE:
-    MODEL:
-      class_path: 'src.model.inception.InceptionNetworkWithDownsampling'
-      KWARGS:
-        num_out_channels:
-          SAMPLE_TYPE: 'ray.tune.choice'
-          KWARGS:
-            categories: [32, 64, 128]
-    TRAIN.OPTIMIZER:
-      KWARGS:
-        lr:
-          SAMPLE_TYPE: 'ray.tune.loguniform'
-          KWARGS:
-            lower: 0.0005
-            upper: 0.005
-  # ------------- (un)comment to enable hyperparameter search -------------
+  # # ------------- (un)comment to enable hyperparameter search -------------
+  # SEARCH_SPACE:
+  #   MODEL:
+  #     class_path: 'src.model.inception.InceptionNetworkWithDownsampling'
+  #     KWARGS:
+  #       num_out_channels:
+  #         SAMPLE_TYPE: 'ray.tune.choice'
+  #         KWARGS:
+  #           categories: [32, 64, 128]
+  #   TRAIN.OPTIMIZER:
+  #     KWARGS:
+  #       lr:
+  #         SAMPLE_TYPE: 'ray.tune.loguniform'
+  #         KWARGS:
+  #           lower: 0.0005
+  #           upper: 0.005
+  # # ------------- (un)comment to enable hyperparameter search -------------
 
 DATALOADER:
   class_path: 'torch.utils.data.DataLoader'
   KWARGS:
-    batch_size: 1024
+    batch_size: 4
     shuffle: True
-    num_workers: 16
-    pin_memory: True
+    num_workers: 2
     drop_last: True
     persistent_workers: True
     prefetch_factor: 2

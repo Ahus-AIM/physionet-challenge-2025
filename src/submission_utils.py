@@ -1,10 +1,17 @@
-import torch
+from typing import Any, Tuple
+
 import numpy as np
-from typing import Tuple, Any
+import torch
 from numpy.typing import NDArray
 from scipy.signal import butter, lfilter, resample_poly
 
-from helper_code import load_header, get_sampling_frequency, load_signals, reorder_signal, get_signal_names
+from helper_code import (
+    get_sampling_frequency,
+    get_signal_names,
+    load_header,
+    load_signals,
+    reorder_signal,
+)
 
 
 def bandpass_and_resample(
@@ -106,7 +113,7 @@ def classify_from_record(record: str, model: torch.nn.Module) -> Tuple[int, floa
     signal, _ = load_signals(record)
 
     signal, signal_has_values = process_signal(signal.T, header)
-    signal = drop_channels(signal, model.num_in_channels)
+    signal = drop_channels(signal, int(model.num_in_channels))  # type: ignore
     signal_tensor = torch.tensor(signal, dtype=torch.float32).unsqueeze(0)
 
     logit = model(signal_tensor)

@@ -1,7 +1,8 @@
+from collections import OrderedDict
+from typing import List
+
 import torch
 import torch.nn as nn
-from typing import List
-from collections import OrderedDict
 
 
 def conv(in_planes: int, out_planes: int, kernel_size: int = 3, stride: int = 1) -> nn.Conv1d:
@@ -168,6 +169,8 @@ class InceptionNetworkWithDownsampling(nn.Module):
     def load_weights(self, path: str) -> None:
         loaded = torch.load(path, map_location="cpu", weights_only=True)
         if isinstance(loaded, OrderedDict):
+            # remove the keys "_orig_mod" as it is added by torch.compile
+            loaded = OrderedDict((k.replace("_orig_mod.", ""), v) for k, v in loaded.items())
             self.load_state_dict(loaded)
         elif isinstance(loaded, tuple):
             self.load_state_dict(loaded[0])

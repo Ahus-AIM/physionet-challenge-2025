@@ -13,10 +13,11 @@
 # described on the Challenge webpage.
 
 import argparse
-import numpy as np
 import os
 import os.path
 import sys
+
+import numpy as np
 
 from helper_code import *
 

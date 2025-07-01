@@ -1,0 +1,10 @@
+__pycache__/
+venv/
+sandbox/
+# Ignore data files and exports
+*.hdf5
+*.zip
+*.csv
+
+
+

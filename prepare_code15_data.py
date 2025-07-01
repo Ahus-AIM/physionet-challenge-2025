@@ -2,14 +2,16 @@
 
 # Load libraries.
 import argparse
-import h5py
-import numpy as np
 import os
 import os.path
 import sys
-import wfdb
 
-from helper_code import is_integer, is_boolean, sanitize_boolean_value
+import h5py
+import numpy as np
+import wfdb
+from tqdm import tqdm
+
+from helper_code import is_boolean, is_integer, sanitize_boolean_value
 
 
 # Parse arguments.
@@ -123,7 +125,7 @@ def run(args):
             num_exam_ids = len(exam_ids)
 
             # Iterate over the exam IDs in each signal file.
-            for i in range(num_exam_ids):
+            for i in tqdm(range(num_exam_ids)):
                 exam_id = exam_ids[i]
 
                 # Skip exam IDs without Chagas labels.
