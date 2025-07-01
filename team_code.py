@@ -28,7 +28,7 @@ def train_model(data_folder: str, model_folder: str, verbose: bool) -> None:
         print(f"Saving model to {model_folder}")
 
     torch.save(model.state_dict(), os.path.join(model_folder, "inception.pth"))
-    with open(os.path.join(model_folder, "inception.yml"), "w") as f:
+    with open(os.path.join(model_folder, "inception_wfdb.yml"), "w") as f:
         f.write(config.dump())
 
     return None
@@ -38,7 +38,7 @@ def train_model(data_folder: str, model_folder: str, verbose: bool) -> None:
 # arguments of this function. If you do not train one of the models, then you can return None for the model.
 def load_model(model_folder: str, verbose: bool) -> torch.nn.Module:
     files = os.listdir(model_folder)
-    config_path = [file for file in files if file.endswith("inception.yml")][0]
+    config_path = [file for file in files if file.endswith("inception_wfdb.yml")][0]
     config_path = os.path.join(model_folder, config_path)
     weights_path = [file for file in files if file.endswith("inception.pth")][0]
     weights_path = os.path.join(model_folder, weights_path)
