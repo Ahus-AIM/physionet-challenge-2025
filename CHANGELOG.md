@@ -1,6 +1,33 @@
 # CHANGELOG
 
 
+## v0.4.0 (2025-07-03)
+
+### Chores
+
+* chore: add dockerignore file ([`898b374`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/898b3740fbfc9e2dd77204645e916b1c514204b5))
+
+### Continuous Integration
+
+* ci: use named docker volume for submission ([`c847d91`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/c847d91226a1a373ee51492509fb7b3865df1931))
+
+* ci: add cuda:1 to submission workflow ([`be57234`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/be5723404f126c3b8ff3185f97ec25e143426119))
+
+* ci: remove cleanup of build folder ([`bb5b7a4`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/bb5b7a4d8c50e9c2bdf95ad75eb76d6d81803695))
+
+* ci: use self hosted runner without docker ([`3f196f9`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/3f196f98847aaba10f089ab152ad1ae246c37958))
+
+### Features
+
+* feat: introduce ensembling class ([`3008984`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/30089840bfe87b6850100ce861e299acac621d27))
+
+### Unknown
+
+* Merge pull request #10 from Ahus-AIM/full-dataset
+
+Full dataset ([`06bd575`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/06bd575fbcc70678b0ac63450c720143fa8e4b6e))
+
+
 ## v0.3.0 (2025-07-01)
 
 ### Bug Fixes
