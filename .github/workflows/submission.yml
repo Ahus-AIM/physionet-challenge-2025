@@ -9,14 +9,20 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: Create shared Docker volume
+        run: docker volume create challenge_model
+
       - name: Build Docker image
         run: docker build -t physionet_challenge .
 
       - name: Train Model
-        run: docker run --rm --name train_model --gpus device=1 -v ${PWD}/test/model:/challenge/model -v ${PWD}/test/holdout_data:/challenge/holdout_data -v ${PWD}/test/holdout_outputs:/challenge/holdout_outputs -v ${PWD}/test/training_data:/challenge/training_data physionet_challenge python train_model.py -d training_data -m model -v
+        run: docker run --rm --name train_model --gpus device=1 -v challenge_model:/challenge/model -v ${PWD}/test/holdout_data:/challenge/holdout_data -v ${PWD}/test/holdout_outputs:/challenge/holdout_outputs -v ${PWD}/test/training_data:/challenge/training_data physionet_challenge python train_model.py -d training_data -m model -v
 
       - name: Run Model
-        run: docker run --rm --name run_model --gpus device=1 -v ${PWD}/test/model:/challenge/model -v ${PWD}/test/holdout_data:/challenge/holdout_data -v ${PWD}/test/holdout_outputs:/challenge/holdout_outputs -v ${PWD}/test/training_data:/challenge/training_data physionet_challenge python run_model.py -d holdout_data -m model -o holdout_outputs -v
+        run: docker run --rm --name run_model --gpus device=1 -v challenge_model:/challenge/model -v ${PWD}/test/holdout_data:/challenge/holdout_data -v ${PWD}/test/holdout_outputs:/challenge/holdout_outputs -v ${PWD}/test/training_data:/challenge/training_data physionet_challenge python run_model.py -d holdout_data -m model -o holdout_outputs -v
 
       - name: Evaluate Model
-        run: docker run --rm --name evaluate_model --gpus device=1 -v ${PWD}/test/model:/challenge/model -v ${PWD}/test/holdout_data:/challenge/holdout_data -v ${PWD}/test/holdout_outputs:/challenge/holdout_outputs -v ${PWD}/test/training_data:/challenge/training_data physionet_challenge python evaluate_model.py -d holdout_data -o holdout_outputs
+        run: docker run --rm --name evaluate_model --gpus device=1 -v challenge_model:/challenge/model -v ${PWD}/test/holdout_data:/challenge/holdout_data -v ${PWD}/test/holdout_outputs:/challenge/holdout_outputs -v ${PWD}/test/training_data:/challenge/training_data physionet_challenge python evaluate_model.py -d holdout_data -o holdout_outputs
+      - name: Remove shared Docker volume
+        if: always()  # ensure it runs even if job fails
+        run: docker volume rm challenge_model
