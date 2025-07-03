@@ -6,13 +6,6 @@ jobs:
   submission:
     runs-on: non-docker-self-hosted
     steps:
-      - name: 'Cleanup build folder'
-        run: |
-          sudo ls -la ./
-          sudo rm -rf ./* || true
-          sudo rm -rf ./.??* || true
-          sudo ls -la ./
-
       - name: Checkout repository
         uses: actions/checkout@v3
 
