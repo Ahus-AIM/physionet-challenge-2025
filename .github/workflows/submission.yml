@@ -4,7 +4,7 @@ on: [push]
 
 jobs:
   submission:
-    runs-on: ubuntu-latest
+    runs-on: non-docker-self-hosted
     steps:
       - name: 'Cleanup build folder'
         run: |
