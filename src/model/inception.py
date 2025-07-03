@@ -173,6 +173,8 @@ class InceptionNetworkWithDownsampling(nn.Module):
             loaded = OrderedDict((k.replace("_orig_mod.", ""), v) for k, v in loaded.items())
             self.load_state_dict(loaded)
         elif isinstance(loaded, tuple):
-            self.load_state_dict(loaded[0])
+            loaded = loaded[0]
+            loaded = OrderedDict((k.replace("_orig_mod.", ""), v) for k, v in loaded.items())
+            self.load_state_dict(loaded)
         else:
             print("Could not load weights")

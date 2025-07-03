@@ -82,8 +82,4 @@ class WFDBDataset(Dataset[Tuple[torch.Tensor, torch.Tensor]]):
         record_path = self.records[idx]
         header = load_text(record_path + ".hea")
         label_str = header.split(label_string)[1].split("\n")[0]
-        if "true" in label_str.lower():
-            label = 1
-        else:
-            label = 0
-        return label
+        return 1 if "true" in label_str.lower() else 0
