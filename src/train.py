@@ -319,13 +319,13 @@ def main(config: CN) -> Optional[ExperimentAnalysis]:
     # get different configurations each time you run the script.
     np.random.seed(42)
 
-    search_alg = OptunaSearch(metric="val_loss", mode="min")
+    search_alg = OptunaSearch(metric="val_challenge_score", mode="max")
 
     result = ray.tune.run(
         partial(load_and_train, config=config),
         resources_per_trial={"cpu": 16, "gpu": 1},
         config=ray_config,
-        num_samples=20,  # or more, for better results
+        num_samples=100,
         scheduler=scheduler,
         search_alg=search_alg,
         stop=stopper,
@@ -335,5 +335,5 @@ def main(config: CN) -> Optional[ExperimentAnalysis]:
 
 if __name__ == "__main__":
     multiprocessing.set_start_method("spawn", force=True)  # CUDA does not support "fork", which is default on linux.
-    cfg = get_cfg("src/config/inception_wfdb.yml")
+    cfg = get_cfg("src/config/inception.yml")
     main(cfg)
