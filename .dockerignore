@@ -1,0 +1,9 @@
+venv/
+sandbox/
+.mypy_cache/
+.git/
+__pycache__/
+*.pth
+*.npy
+*.csv
+*.hdf5
