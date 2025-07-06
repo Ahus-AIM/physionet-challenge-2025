@@ -1,6 +1,25 @@
 # CHANGELOG
 
 
+## v0.4.1 (2025-07-06)
+
+### Bug Fixes
+
+* fix: create directories if they do not already exist ([`ab509ce`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/ab509ced4a45db776b92822195044b3e27ec5aa8))
+
+* fix: bug where inference fails if signal has exactly 300 hz sample rate ([`9de2e79`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/9de2e797ef1928f95001e004304331947c3c2e79))
+
+### Testing
+
+* test: add test case with exactly 2x highpass frequency ([`5a03ce5`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/5a03ce511c183fdbb106d5a33671655cefb192ca))
+
+### Unknown
+
+* Merge pull request #11 from Ahus-AIM/bugfix-official-submission-one
+
+Bugfix after first failed submission ([`1de337a`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/1de337acffa4255eba0cdc5b70fdc6e2644fd929))
+
+
 ## v0.4.0 (2025-07-03)
 
 ### Chores
