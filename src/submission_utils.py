@@ -25,10 +25,10 @@ def bandpass_and_resample(
     low = lowcut / nyquist
     high = highcut / nyquist
 
-    if low < 0.0:
+    if low <= 0.0:
         print(f"Lowcut {lowcut} is too low for the sampling frequency {rate}. Setting to 0.0.")
         low = 1e-5
-    if high > 1.0:
+    if high >= 1.0:
         print(f"Highcut {highcut} is too high for the sampling frequency {rate}. Setting to 1.0.")
         high = 1 - 1e-5
 
