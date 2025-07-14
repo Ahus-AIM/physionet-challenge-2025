@@ -59,6 +59,16 @@ def get_data_loaders(
     k_folds = dataset_kwargs.get("k_folds", 1)
     val_fold = dataset_kwargs.get("val_fold", 0)
 
+    # This is used for bloodtest pretraining where the metadata is stored in csv files as opposed to wfdb headers.
+    if dataset_config.get("VAL", {}).get("KWARGS", {}).get("split") == "val":
+        train_dataset = dataset_model(
+            **{**dataset_kwargs, **dataset_config["TRAIN"]["KWARGS"]}, transform=transform_train
+        )
+        val_dataset = dataset_model(**{**dataset_kwargs, **dataset_config["VAL"]["KWARGS"]}, transform=transform_val)
+        train_dataloader = DataLoader(train_dataset, **dataloader_config)
+        val_dataloader = DataLoader(val_dataset, **dataloader_config)
+        return train_dataloader, val_dataloader
+
     # Instantiate dataset once (avoid double loading) if using k-fold
     if k_folds > 1:
         # Merge TRAIN and base KWARGS, but pass transform separately

@@ -1,7 +1,10 @@
 MODEL:
   class_path: 'src.model.inception.InceptionNetworkWithDownsampling'
   KWARGS:
-    num_out_channels: 32
+    num_out_channels: 96
+LOAD_MODEL:
+  weights_path: '/home/stenheli/projects/physionet-challenge-2025/sandbox/checkpoint_epoch_100.pt'
+  drop_last_fc: True
 TRAIN:
   LR_SCHEDULER:
     class_path: 'src.utils.CosineToConstantLR'
@@ -14,18 +17,17 @@ TRAIN:
     class_path: 'src.utils.EarlyStopper'
     KWARGS:
       metric: 'val_loss'
-      patience: 3
+      patience: 2
       delta: 0
   OPTIMIZER:
     class_path: 'src.optimizer.adammuon.AdamMuon'
     KWARGS:
-      lr: 0.001
+      lr: 0.01
   MIXED_PRECISION_SCALER:
     class_path: 'torch.amp.GradScaler'
     KWARGS: {}
   CRITERION:
-    # class_path: 'torch.nn.BCEWithLogitsLoss'
-    class_path: 'src.loss.loss.RankingLoss'
+    class_path: 'torch.nn.BCEWithLogitsLoss'
   KWARGS:
     epochs: 10
     device: 'cuda'
