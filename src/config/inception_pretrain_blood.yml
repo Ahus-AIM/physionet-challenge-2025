@@ -2,22 +2,21 @@ MODEL:
   class_path: 'src.model.inception.InceptionNetworkWithDownsampling'
   KWARGS:
     num_out_channels: 96
-LOAD_MODEL:
-  weights_path: '/home/stenheli/projects/physionet-challenge-2025/sandbox/checkpoint_epoch_100.pt'
-  drop_last_fc: True
+    num_tests: 19
+    num_bins: 100
 TRAIN:
   LR_SCHEDULER:
     class_path: 'src.utils.CosineToConstantLR'
     KWARGS:
-      T_max: 10000
-      eta_min_divisor: 2.0
+      T_max: 15000
+      eta_min_divisor: 20.0
   CUDNN_BENCHMARK: True
   COMPILE: True
   STOPPER:
     class_path: 'src.utils.EarlyStopper'
     KWARGS:
       metric: 'val_loss'
-      patience: 2
+      patience: 3
       delta: 0
   OPTIMIZER:
     class_path: 'src.optimizer.adammuon.AdamMuon'
@@ -27,27 +26,27 @@ TRAIN:
     class_path: 'torch.amp.GradScaler'
     KWARGS: {}
   CRITERION:
-    class_path: 'torch.nn.BCEWithLogitsLoss'
+    class_path: 'torch.nn.CrossEntropyLoss'
+    KWARGS:
+      ignore_index: -100
   KWARGS:
-    epochs: 10
+    epochs: 100
     device: 'cuda'
     metrics: []
     global_metrics:
-      - class_path: 'src.metric.metric.challenge_score'
-      - class_path: 'src.metric.metric.aucroc'
-      - class_path: 'src.metric.metric.aucprc'
-HYPERPARAMETER_SEARCH:
+      - class_path: 'src.metric.metric.topk_accuracy'
 
-  # SEARCH_SPACE: False
+HYPERPARAMETER_SEARCH:
+  SEARCH_SPACE: False
 
   # # ------------- (un)comment to enable hyperparameter search -------------
-  SEARCH_SPACE:
-    DATASET:
-      KWARGS:
-        val_fold:
-          SAMPLE_TYPE: 'ray.tune.choice'
-          KWARGS:
-            categories: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+  # SEARCH_SPACE:
+  #   DATASET:
+  #     KWARGS:
+  #       val_fold:
+  #         SAMPLE_TYPE: 'ray.tune.choice'
+  #         KWARGS:
+  #           categories: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
   #   MODEL:
   #     class_path: 'src.model.inception.InceptionNetworkWithDownsampling'
   #     KWARGS:
@@ -67,41 +66,59 @@ HYPERPARAMETER_SEARCH:
 DATALOADER:
   class_path: 'torch.utils.data.DataLoader'
   KWARGS:
-    batch_size: 512
+    batch_size: 256
     shuffle: True
-    num_workers: 16
+    num_workers: 32
     pin_memory: True
-    drop_last: False
+    drop_last: True
     persistent_workers: True
-    prefetch_factor: 2
+    prefetch_factor: 6
 DATASET:
-  class_path: 'src.dataset.wfdb_dataset.WFDBDataset'
+  class_path: 'src.dataset.bloodtest_wfdb_dataset.BloodECGDataset'
   KWARGS:
     k_folds: 10
     val_fold: 0
   TRAIN:
     KWARGS:
-      root_dir: '/dataset/GeorgeMoodyChallenge2025/'
+      base_dir: '/dataset/physionet.org/files/mimic-iv-ecg-diagnostic/mimic-iv-ecg-diagnostic-electrocardiogram-matched-subset-1.0/'
+      ecg_csv_path: 'src/scripts/ecg_with_blood_24h.csv'
+      blood_csv_path: 'src/scripts/blood_with_ecg_24h.csv'
+      split: 'train'
     TRANSFORM:
       class_path: 'src.transform.transform.ComposedTransform'
       KWARGS:
         transform_config:
+          - class_path: 'src.transform.transform.Resample'
+            KWARGS:
+              input_fs: 500
+              target_fs: 400
           - class_path: 'src.transform.transform.RandomCrop'
             KWARGS:
               size: 2700
+          - class_path: 'src.transform.transform.NanToZero'
           - class_path: 'src.transform.transform.HighPassButterworth'
           - class_path: 'src.transform.transform.SoftNormalize'
           - class_path: 'src.transform.transform.DropChannels'
+          - class_path: 'src.transform.transform.AddGaussianNoise'
   VAL:
     KWARGS:
-      root_dir: '/dataset/GeorgeMoodyChallenge2025/'
+      base_dir: '/dataset/physionet.org/files/mimic-iv-ecg-diagnostic/mimic-iv-ecg-diagnostic-electrocardiogram-matched-subset-1.0/'
+      ecg_csv_path: 'src/scripts/ecg_with_blood_24h.csv'
+      blood_csv_path: 'src/scripts/blood_with_ecg_24h.csv'
+      split: 'val'
     TRANSFORM:
       class_path: 'src.transform.transform.ComposedTransform'
       KWARGS:
         transform_config:
+          - class_path: 'src.transform.transform.Resample'
+            KWARGS:
+              input_fs: 500
+              target_fs: 400
           - class_path: 'src.transform.transform.CenterCrop'
             KWARGS:
               size: 2700
+          - class_path: 'src.transform.transform.NanToZero'
           - class_path: 'src.transform.transform.HighPassButterworth'
           - class_path: 'src.transform.transform.SoftNormalize'
           - class_path: 'src.transform.transform.DropChannels'
+          - class_path: 'src.transform.transform.AddGaussianNoise'

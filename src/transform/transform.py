@@ -141,3 +141,80 @@ class ComposedTransform(torch.nn.Module):
         for transform in self.transforms:
             signal = transform.forward(signal)
         return signal
+
+
+class AddGaussianNoise(torch.nn.Module):
+    def __init__(self, mean: float = 0.0, std: float = 1e-5) -> None:
+        """
+        Adds Gaussian noise to the input signal.
+
+        Args:
+            mean (float): Mean of the Gaussian noise.
+            std (float): Standard deviation of the Gaussian noise.
+        """
+        super(AddGaussianNoise, self).__init__()
+        self.mean = mean
+        self.std = std
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        noise = torch.randn_like(x) * self.std + self.mean
+        return x + noise
+
+
+class NanToZero(torch.nn.Module):
+    def __init__(self) -> None:
+        """
+        Converts NaN values in the input tensor to zero.
+        """
+        super(NanToZero, self).__init__()
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Replace NaN values with zero.
+
+        Args:
+            x (torch.Tensor): Input tensor.
+
+        Returns:
+            torch.Tensor: Tensor with NaN values replaced by zero.
+        """
+        return torch.nan_to_num(x, nan=0.0)
+
+
+class Resample(torch.nn.Module):
+    def __init__(self, input_fs: float = 500.0, target_fs: float = 400.0) -> None:
+        """
+        Resample a 1D signal tensor from input_fs to target_fs using polyphase filtering.
+
+        Args:
+            input_fs (float): Original sampling frequency in Hz. Default: 500.
+            target_fs (float): Desired sampling frequency in Hz. Default: 400.
+        """
+        super(Resample, self).__init__()
+        # compute integer up/down factors
+        from math import gcd
+
+        up = int(target_fs)
+        down = int(input_fs)
+        g = gcd(up, down)
+        self.up = up // g
+        self.down = down // g
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Apply resampling to a batch of signals.
+
+        Args:
+            x (torch.Tensor): Input tensor of shape (..., time).
+
+        Returns:
+            torch.Tensor: Resampled tensor with time dimension scaled by up/down.
+        """
+        # move to numpy for scipy
+        orig_dev = x.device
+        x_np = x.detach().cpu().numpy()
+        # use polyphase filtering for high-quality resampling
+        y_np = signal.resample_poly(x_np, self.up, self.down, axis=-1)
+        # convert back to torch tensor
+        y = torch.tensor(y_np, dtype=x.dtype, device=orig_dev)
+        return y

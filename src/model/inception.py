@@ -1,5 +1,5 @@
 from collections import OrderedDict
-from typing import List
+from typing import Optional
 
 import torch
 import torch.nn as nn
@@ -18,7 +18,7 @@ class InceptionBlock1d(nn.Module):
         self,
         num_in_channels: int,
         num_out_channels: int,
-        kernel_sizes: List[int],
+        kernel_sizes: list[int],
         bottleneck_channels: int,
         use_bottleneck: bool,
     ) -> None:
@@ -80,7 +80,7 @@ class InceptionNetwork(nn.Module):
         num_blocks: int,
         num_in_channels: int,
         num_out_channels: int,
-        kernel_sizes: List[int],
+        kernel_sizes: list[int],
         use_bottleneck: bool,
         bottleneck_channels: int,
         num_classes: int,
@@ -114,6 +114,11 @@ class InceptionNetwork(nn.Module):
         self.fc = nn.Linear(num_out_channels * 4, num_classes)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        x = self.all_but_last(x)
+        x = self.fc(x)
+        return x
+
+    def all_but_last(self, x: torch.Tensor) -> torch.Tensor:
         input_res = x
 
         for i, block in enumerate(self.blocks):
@@ -124,7 +129,6 @@ class InceptionNetwork(nn.Module):
 
         x = self.global_avg_pool(x)
         x = x.view(x.size(0), -1)
-        x = self.fc(x)
         return x
 
 
@@ -134,23 +138,24 @@ class InceptionNetworkWithDownsampling(nn.Module):
         num_blocks: int = 6,
         num_in_channels: int = 8,
         num_out_channels: int = 32,
-        kernel_sizes: List[int] = [9, 19, 39],
+        kernel_sizes: list[int] = [9, 19, 39],
         use_bottleneck: bool = True,
         bottleneck_channels: int = 32,
         num_classes: int = 1,
         residual: bool = True,
+        num_bins: Optional[int] = None,
+        num_tests: Optional[int] = None,
     ) -> None:
-        super(InceptionNetworkWithDownsampling, self).__init__()
-        self.inception_network = InceptionNetwork(
-            num_blocks=num_blocks,
-            num_in_channels=num_out_channels,
-            num_out_channels=num_out_channels,
-            kernel_sizes=kernel_sizes,
-            use_bottleneck=use_bottleneck,
-            bottleneck_channels=bottleneck_channels,
-            num_classes=num_classes,
-            residual=residual,
-        )
+        super().__init__()
+        self.num_in_channels = num_in_channels
+        self.multi_test_mode = num_bins is not None and num_tests is not None
+        if self.multi_test_mode:
+            self.num_bins = num_bins
+            self.num_tests = num_tests
+            total_classes = num_bins * num_tests  # type: ignore
+        else:
+            total_classes = num_classes
+
         self.down_layers = nn.Sequential(
             nn.Conv1d(num_in_channels, num_out_channels, kernel_size=5, stride=2),
             nn.BatchNorm1d(num_out_channels),
@@ -159,22 +164,39 @@ class InceptionNetworkWithDownsampling(nn.Module):
             nn.BatchNorm1d(num_out_channels),
             nn.GELU(),
         )
-        self.num_in_channels = num_in_channels
+
+        self.inception_network = InceptionNetwork(
+            num_blocks=num_blocks,
+            num_in_channels=num_out_channels,
+            num_out_channels=num_out_channels,
+            kernel_sizes=kernel_sizes,
+            use_bottleneck=use_bottleneck,
+            bottleneck_channels=bottleneck_channels,
+            num_classes=total_classes,
+            residual=residual,
+        )
+
+    def get_internal_activations(self, x: torch.Tensor) -> torch.Tensor:
+        x = self.down_layers(x)
+        x = self.inception_network.all_but_last(x)
+        return x
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = self.down_layers(x)
         x = self.inception_network(x)
+
+        if self.multi_test_mode:
+            B, _ = x.shape
+            x = x.view(B, self.num_bins, self.num_tests)  # type: ignore
         return x
 
-    def load_weights(self, path: str) -> None:
+    def load_weights(self, path: str, drop_last_fc: bool = False) -> None:
         loaded = torch.load(path, map_location="cpu", weights_only=True)
-        if isinstance(loaded, OrderedDict):
-            # remove the keys "_orig_mod" as it is added by torch.compile
-            loaded = OrderedDict((k.replace("_orig_mod.", ""), v) for k, v in loaded.items())
-            self.load_state_dict(loaded)
-        elif isinstance(loaded, tuple):
+        if isinstance(loaded, tuple):
             loaded = loaded[0]
-            loaded = OrderedDict((k.replace("_orig_mod.", ""), v) for k, v in loaded.items())
-            self.load_state_dict(loaded)
-        else:
-            print("Could not load weights")
+
+        loaded = OrderedDict((k.replace("_orig_mod.", ""), v) for k, v in loaded.items())
+        if drop_last_fc:
+            loaded = OrderedDict((k, v) for k, v in loaded.items() if not k.startswith("inception_network.fc"))
+
+        self.load_state_dict(loaded, strict=not drop_last_fc)
