@@ -1,6 +1,27 @@
 # CHANGELOG
 
 
+## v0.5.0 (2025-07-14)
+
+### Features
+
+* feat: enable config argparsing and save weights if not using ray ([`1fc8211`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/1fc8211bcdea5ad1aecc676e76c8c38eff4bb7ba))
+
+* feat: enable bloodtest pretraining ([`089b6fa`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/089b6fad51e430d6e2238c6172224b38066c9cb6))
+
+* feat: update model weights to blood-pretrained ([`aee9703`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/aee9703cef6c210fa96f8d97740f6c5a64facd47))
+
+### Refactoring
+
+* refactor: remove legacy dataset ([`1929c44`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/1929c44471be473fbaf92f81387cdb04ff11ecea))
+
+### Unknown
+
+* Merge pull request #12 from Ahus-AIM/bloodtest-pretraining
+
+Bloodtest pretraining ([`63feaa8`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/63feaa889a26cb77ccdde1f6ab3707e34a99c374))
+
+
 ## v0.4.1 (2025-07-06)
 
 ### Bug Fixes
