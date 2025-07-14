@@ -1,4 +1,4 @@
-import multiprocessing
+import argparse
 import os
 import tempfile
 from functools import partial
@@ -95,7 +95,7 @@ def run_epoch(
                     loss.backward()
                     optimizer.step()  # type: ignore
 
-                if lr_scheduler:
+                if lr_scheduler and not eval:
                     lr_scheduler.step()
 
             total_loss += loss.item()
@@ -220,6 +220,13 @@ def train(
         if not use_ray:
             formatted_results = {k: f"{v:.6f}" for k, v in results.items()}
             print(f"Epoch {epoch + 1}/{num_epochs}: {formatted_results}")
+            if is_new_best_metric:
+                if not os.path.exists("sandbox"):
+                    os.mkdir("sandbox")
+                torch.save(
+                    model.state_dict(),
+                    os.path.join("sandbox", f"checkpoint_epoch_{epoch + 1}.pt"),
+                )
         elif is_new_best_metric:
             with tempfile.TemporaryDirectory() as temp_checkpoint_dir:
                 path = os.path.join(temp_checkpoint_dir, "checkpoint.pt")
@@ -246,7 +253,9 @@ def load_and_train(ray_config: CN, config: CN) -> torch.nn.Module:
 
     model = load_model(config)
     if hasattr(config, "LOAD_MODEL"):
-        model.load_weights(config.LOAD_MODEL.weights_path)  # type: ignore
+        print(f"Loading model weights from {config.LOAD_MODEL.weights_path}")
+        drop_last_fc = getattr(config.LOAD_MODEL, "drop_last_fc", False)
+        model.load_weights(config.LOAD_MODEL.weights_path, drop_last_fc)  # type: ignore
 
     optimizer = import_class_from_path(config.TRAIN.OPTIMIZER.class_path)(
         model.parameters(), **config.TRAIN.OPTIMIZER.KWARGS
@@ -334,6 +343,14 @@ def main(config: CN) -> Optional[ExperimentAnalysis]:
 
 
 if __name__ == "__main__":
-    multiprocessing.set_start_method("spawn", force=True)  # CUDA does not support "fork", which is default on linux.
-    cfg = get_cfg("src/config/inception.yml")
+    argparser = argparse.ArgumentParser(description="Train a model with Ray Tune.")
+    argparser.add_argument(
+        "--config",
+        type=str,
+        default="src/config/inception.yml",
+        help="Path to the configuration file.",
+    )
+    args = argparser.parse_args()
+
+    cfg = get_cfg(args.config)
     main(cfg)
