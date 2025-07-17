@@ -1,6 +1,31 @@
 # CHANGELOG
 
 
+## v0.6.0 (2025-07-17)
+
+### Bug Fixes
+
+* fix: update weights for submission 3 ([`a135a21`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/a135a21cbbad9f0cfd7141e0f331d6dd51697272))
+
+### Features
+
+* feat: ensure training script works for both pretraining and finetuning ([`344cb70`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/344cb700cb113063fd607e036b70a0fa7fb125ef))
+
+* feat: update the post ray run plotting script ([`7f54220`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/7f54220d717616161b7487577143283e3eeaedc6))
+
+* feat: add script for fetching best weights after pretraining run ([`b88deac`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/b88deac61a0af88709f7b78114001420b5622849))
+
+* feat: add weight smoothing for bloodtest pretraining ([`d0e8b3f`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/d0e8b3fd25e343be59b4017d17e74e0046b044c0))
+
+* feat: update inference code for submission 3 ([`cad7d26`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/cad7d2697ec95ca03f2a1829aa08c417e2ba76e2))
+
+### Unknown
+
+* Merge pull request #13 from Ahus-AIM/submission-3
+
+Submission 3 ([`3278f5f`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/3278f5f87ca969b8999d36453d26f5da8c013fbd))
+
+
 ## v0.5.0 (2025-07-14)
 
 ### Features
