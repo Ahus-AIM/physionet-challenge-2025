@@ -72,10 +72,11 @@ def plot_metrics(
 ) -> None:
     os.makedirs(outdir, exist_ok=True)
     for col in metric_names:
-        fig, ax = plt.subplots(1, 2, figsize=(15, 5))
+        fig, ax = plt.subplots(1, 2, figsize=(25, 10))
         for run, data in results.items():
-            runname: str = run.split("/")[-1][29:]
-            runname = " ".join(runname.split("_")[:-2])
+            runname: str = run.split("/")[-1]  # [20:]
+            runname = " ".join(runname.split("_")[5:-2])
+            runname = "=".join(runname.split("=")[:])
             if f"{train_prefix}{col}" in data:
                 ax[0].plot(data[f"{train_prefix}{col}"], label=runname)
             ax[0].set_title(f"Training {col}")
@@ -92,6 +93,44 @@ def plot_metrics(
         plt.savefig(plot_path)
         print(f"Saved: {plot_path}")
         plt.close(fig)
+
+
+# def summarize_runs(results, metric, val_prefix="val_", train_prefix="train_"): NOTE need type annotations
+def summarize_runs(
+    results: dict[str, dict[str, list[float]]],
+    metric: str,
+    val_prefix: str = VAL_PREFIX,
+    train_prefix: str = TRAIN_PREFIX,
+) -> pd.DataFrame:
+    rows = []
+    for run, data in results.items():
+        runname: str = run.split("/")[-1]
+        runname = " ".join(runname.split("_")[5:-2])
+        runname = "=".join(runname.split("=")[:])
+        params = {}
+        for kv in runname.split(","):
+            if "=" in kv:
+                k, v = kv.split("=")
+                params[k.strip()] = v.strip()
+        val_metric = data.get(f"{val_prefix}{metric}", [])
+        train_metric = data.get(f"{train_prefix}{metric}", [])
+        max_val = max(val_metric) if val_metric else float("-inf")
+        max_train = max(train_metric) if train_metric else float("-inf")
+        row = {
+            **params,
+            "max_val_metric": max_val,
+            "max_train_metric": max_train,
+        }
+        rows.append(row)
+
+    df = pd.DataFrame(rows)
+    # Coerce columns to numeric for sorting
+    df["max_val_metric"] = pd.to_numeric(df["max_val_metric"], errors="coerce")
+    df["max_train_metric"] = pd.to_numeric(df["max_train_metric"], errors="coerce")
+    # Now sort
+    df = df.sort_values("max_val_metric", ascending=False)
+    print(df.to_markdown(index=False))
+    return df
 
 
 def main() -> None:
@@ -113,6 +152,7 @@ def main() -> None:
     print(f"\nSaving plots to: {plots_dir}")
 
     plot_metrics(results, metric_names, plots_dir)
+    summarize_runs(results, "challenge_score")
 
 
 if __name__ == "__main__":
