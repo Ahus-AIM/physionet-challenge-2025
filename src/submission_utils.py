@@ -50,6 +50,19 @@ def bandpass_and_resample(
         return resampled_signal
 
 
+def resample_signal(signal: NDArray[Any], rate: float, target_rate: float) -> NDArray[Any]:
+    """
+    Resample the signal to the target rate.
+    """
+    if rate == target_rate:
+        return signal
+    else:
+        up = int(target_rate)
+        down = int(rate)
+        resampled: NDArray[Any] = resample_poly(signal, up, down, axis=1)
+        return resampled
+
+
 def detect_zero_padding(signal: NDArray[Any]) -> Tuple[int, int, bool]:
     stddev = np.std(signal, axis=0)
     nonzero_indices = np.nonzero(stddev)[0]
@@ -95,15 +108,7 @@ def process_signal(signal: NDArray[Any], header: str) -> Tuple[NDArray[Any], boo
     # Bandpass and resample filter the signal
     rate: float = get_sampling_frequency(header)  # type: ignore
     target_rate: float = 400.0
-    lowcut: float = 0.5
-    highcut: float = 150.0
-    signal = bandpass_and_resample(signal, rate, target_rate, lowcut, highcut)
-
-    # Normalize the signal
-    signal = normalize_signal(signal)
-
-    # Ensure the channels are always in the same order
-    signal = reorder_channels(signal, header)
+    signal = resample_signal(signal, rate, target_rate)
 
     return signal, signal_has_values
 

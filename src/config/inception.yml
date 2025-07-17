@@ -3,7 +3,7 @@ MODEL:
   KWARGS:
     num_out_channels: 96
 LOAD_MODEL:
-  weights_path: '/home/stenheli/projects/physionet-challenge-2025/sandbox/checkpoint_epoch_100.pt'
+  weights_path: '/home/stenheli/projects/physionet-challenge-2025/sandbox/weights/load_and_train_2025-07-16_19-00-33_checkpoint_000003.pt'
   drop_last_fc: True
 TRAIN:
   LR_SCHEDULER:
@@ -22,7 +22,7 @@ TRAIN:
   OPTIMIZER:
     class_path: 'src.optimizer.adammuon.AdamMuon'
     KWARGS:
-      lr: 0.01
+      lr: 0.001
   MIXED_PRECISION_SCALER:
     class_path: 'torch.amp.GradScaler'
     KWARGS: {}
@@ -67,7 +67,7 @@ HYPERPARAMETER_SEARCH:
 DATALOADER:
   class_path: 'torch.utils.data.DataLoader'
   KWARGS:
-    batch_size: 512
+    batch_size: 64
     shuffle: True
     num_workers: 16
     pin_memory: True
@@ -89,8 +89,8 @@ DATASET:
           - class_path: 'src.transform.transform.RandomCrop'
             KWARGS:
               size: 2700
-          - class_path: 'src.transform.transform.HighPassButterworth'
-          - class_path: 'src.transform.transform.SoftNormalize'
+          # - class_path: 'src.transform.transform.HighPassButterworth'
+          # - class_path: 'src.transform.transform.SoftNormalize'
           - class_path: 'src.transform.transform.DropChannels'
   VAL:
     KWARGS:
@@ -102,6 +102,6 @@ DATASET:
           - class_path: 'src.transform.transform.CenterCrop'
             KWARGS:
               size: 2700
-          - class_path: 'src.transform.transform.HighPassButterworth'
-          - class_path: 'src.transform.transform.SoftNormalize'
+          # - class_path: 'src.transform.transform.HighPassButterworth'
+          # - class_path: 'src.transform.transform.SoftNormalize'
           - class_path: 'src.transform.transform.DropChannels'
