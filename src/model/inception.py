@@ -111,7 +111,7 @@ class InceptionNetwork(nn.Module):
             )
 
         self.global_avg_pool = nn.AdaptiveAvgPool1d(1)
-        self.fc = nn.Linear(num_out_channels * 4, num_classes)
+        self.fc = nn.Linear(num_out_channels * 4, num_classes, bias=False)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = self.all_but_last(x)

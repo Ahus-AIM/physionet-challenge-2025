@@ -26,7 +26,7 @@ class BloodECGDataset(Dataset[tuple[torch.Tensor, torch.LongTensor]]):
         load_n_ecgs: Optional[int] = None,
         k_folds: int = 10,
         val_fold: int = 0,
-        seed: Optional[int] = None,
+        seed: int = 42,
         catalogue_path: Optional[str] = None,
     ) -> None:
         # Basic parameters

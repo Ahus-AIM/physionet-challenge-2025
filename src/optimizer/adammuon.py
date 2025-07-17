@@ -22,10 +22,13 @@ def zeropower_via_newtonschulz5(G: torch.Tensor, steps: int = 5, eps: float = 1e
 
 
 class Muon(Optimizer):
-    def __init__(self, params: list[torch.Tensor], lr: float, momentum: float, weight_decay: float):
+    def __init__(
+        self, params: list[torch.Tensor], lr: float, momentum: float, weight_decay: float, bin_smoothing_factor: float
+    ):
         defaults = dict(lr=lr, momentum=momentum)
         super().__init__(params, defaults)
         self.weight_decay = weight_decay
+        self.bin_smoothing_factor = bin_smoothing_factor
 
     @overload
     def step(self, closure: None = ...) -> None: ...  # noqa: E704
@@ -57,6 +60,23 @@ class Muon(Optimizer):
                 if self.weight_decay != 0:
                     p.data.mul_(1 - lr * self.weight_decay)  # apply weight decay
 
+                # CUSTOM SMOOTHING
+                if (p.ndim == 2) and (self.bin_smoothing_factor > 0.0):
+                    out_features, in_features = p.data.shape
+                    if (out_features % 100 == 0) and (in_features % 4) == 0:
+                        num_bins = 100
+                        num_tests = out_features // num_bins
+                        W = p.data.view(num_bins, num_tests, in_features)
+                        W_prev = torch.roll(W, shifts=+1, dims=0)
+                        W_next = torch.roll(W, shifts=-1, dims=0)
+                        W_smooth = 0.5 * (W_prev + W_next)
+                        alpha = lr * self.bin_smoothing_factor
+                        W[0] = (1 - 0.5 * alpha) * W[0] + (0.5 * alpha) * W[1]
+                        W[1:-1] = (1 - alpha) * W[1:-1] + alpha * W_smooth[1:-1]
+                        W[-1] = (1 - 0.5 * alpha) * W[-1] + (0.5 * alpha) * W[-2]
+                        p.data.copy_(W.view_as(p.data))
+                # CUSTOM SMOOTHING
+
                 p.data.add_(update, alpha=-lr)  # take a step
         return loss
 
@@ -70,6 +90,7 @@ class AdamMuon(Optimizer):
         betas: tuple[float, float] = (0.9, 0.999),
         eps: float = 1e-8,
         weight_decay: float = 1e-5,
+        bin_smoothing_factor: float = 1.0,
     ):
         muon_params, adam_params = [], []
         if isinstance(params, (list, tuple)) and isinstance(params[0], dict):
@@ -86,7 +107,17 @@ class AdamMuon(Optimizer):
                 else:
                     adam_params.append(p)
 
-        self.muon = Muon(muon_params, lr=lr, momentum=muon_momentum, weight_decay=weight_decay) if muon_params else None
+        self.muon = (
+            Muon(
+                muon_params,
+                lr=lr,
+                momentum=muon_momentum,
+                weight_decay=weight_decay,
+                bin_smoothing_factor=bin_smoothing_factor,
+            )
+            if muon_params
+            else None
+        )
         self.adam = AdamW(adam_params, lr=lr, betas=betas, eps=eps, weight_decay=weight_decay) if adam_params else None
 
         # Combine param groups for compatibility with PyTorch schedulers

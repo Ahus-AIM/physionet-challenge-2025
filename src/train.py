@@ -328,7 +328,7 @@ def main(config: CN) -> Optional[ExperimentAnalysis]:
     # get different configurations each time you run the script.
     np.random.seed(42)
 
-    search_alg = OptunaSearch(metric="val_challenge_score", mode="max")
+    search_alg = OptunaSearch(metric="val_loss", mode="min")
 
     result = ray.tune.run(
         partial(load_and_train, config=config),

@@ -9,7 +9,7 @@ TRAIN:
     class_path: 'src.utils.CosineToConstantLR'
     KWARGS:
       T_max: 15000
-      eta_min_divisor: 20.0
+      eta_min_divisor: 1.0
   CUDNN_BENCHMARK: True
   COMPILE: True
   STOPPER:
@@ -21,7 +21,7 @@ TRAIN:
   OPTIMIZER:
     class_path: 'src.optimizer.adammuon.AdamMuon'
     KWARGS:
-      lr: 0.01
+      lr: 0.0037
   MIXED_PRECISION_SCALER:
     class_path: 'torch.amp.GradScaler'
     KWARGS: {}
@@ -30,32 +30,46 @@ TRAIN:
     KWARGS:
       ignore_index: -100
   KWARGS:
-    epochs: 100
+    epochs: 5
     device: 'cuda'
     metrics: []
     global_metrics:
       - class_path: 'src.metric.metric.topk_accuracy'
 
 HYPERPARAMETER_SEARCH:
-  SEARCH_SPACE: False
+  # SEARCH_SPACE: False
 
   # # ------------- (un)comment to enable hyperparameter search -------------
-  # SEARCH_SPACE:
+  SEARCH_SPACE:
   #   DATASET:
   #     KWARGS:
   #       val_fold:
   #         SAMPLE_TYPE: 'ray.tune.choice'
   #         KWARGS:
   #           categories: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-  #   MODEL:
-  #     class_path: 'src.model.inception.InceptionNetworkWithDownsampling'
-  #     KWARGS:
-  #       num_out_channels:
-  #         SAMPLE_TYPE: 'ray.tune.choice'
-  #         KWARGS:
-  #           categories: [32, 64, 128]
-  #   TRAIN.OPTIMIZER:
-  #     KWARGS:
+    MODEL:
+      class_path: 'src.model.inception.InceptionNetworkWithDownsampling'
+      KWARGS:
+        num_out_channels:
+          SAMPLE_TYPE: 'ray.tune.choice'
+          KWARGS:
+            categories: [32, 64, 96]
+    TRAIN.OPTIMIZER:
+      KWARGS:
+        bin_smoothing_factor:
+          SAMPLE_TYPE: 'ray.tune.choice'
+          KWARGS:
+            categories: [0.0, 0.1, 1.0, 10.0]
+        lr:
+          SAMPLE_TYPE: 'ray.tune.choice'
+          KWARGS:
+            categories: [0.001, 0.0037]
+    DATALOADER:
+      KWARGS:
+        batch_size:
+          SAMPLE_TYPE: 'ray.tune.choice'
+          KWARGS:
+            categories: [64, 128, 256]
   #       lr:
   #         SAMPLE_TYPE: 'ray.tune.loguniform'
   #         KWARGS:
@@ -66,9 +80,9 @@ HYPERPARAMETER_SEARCH:
 DATALOADER:
   class_path: 'torch.utils.data.DataLoader'
   KWARGS:
-    batch_size: 256
+    batch_size: 128
     shuffle: True
-    num_workers: 32
+    num_workers: 25
     pin_memory: True
     drop_last: True
     persistent_workers: True
@@ -76,49 +90,28 @@ DATALOADER:
 DATASET:
   class_path: 'src.dataset.bloodtest_wfdb_dataset.BloodECGDataset'
   KWARGS:
-    k_folds: 10
+    k_folds: 5
     val_fold: 0
+    base_dir: '/dataset/physionet.org/files/mimic-iv-ecg-diagnostic/mimic-iv-ecg-diagnostic-electrocardiogram-matched-subset-1.0/'
+    ecg_csv_path: '/home/stenheli/projects/physionet-challenge-2025/src/scripts/ecg_with_blood_24h.csv'
+    blood_csv_path: '/home/stenheli/projects/physionet-challenge-2025/src/scripts/blood_with_ecg_24h.csv'
   TRAIN:
     KWARGS:
-      base_dir: '/dataset/physionet.org/files/mimic-iv-ecg-diagnostic/mimic-iv-ecg-diagnostic-electrocardiogram-matched-subset-1.0/'
-      ecg_csv_path: 'src/scripts/ecg_with_blood_24h.csv'
-      blood_csv_path: 'src/scripts/blood_with_ecg_24h.csv'
       split: 'train'
     TRANSFORM:
       class_path: 'src.transform.transform.ComposedTransform'
       KWARGS:
         transform_config:
-          - class_path: 'src.transform.transform.Resample'
-            KWARGS:
-              input_fs: 500
-              target_fs: 400
-          - class_path: 'src.transform.transform.RandomCrop'
-            KWARGS:
-              size: 2700
           - class_path: 'src.transform.transform.NanToZero'
-          - class_path: 'src.transform.transform.HighPassButterworth'
-          - class_path: 'src.transform.transform.SoftNormalize'
           - class_path: 'src.transform.transform.DropChannels'
           - class_path: 'src.transform.transform.AddGaussianNoise'
   VAL:
     KWARGS:
-      base_dir: '/dataset/physionet.org/files/mimic-iv-ecg-diagnostic/mimic-iv-ecg-diagnostic-electrocardiogram-matched-subset-1.0/'
-      ecg_csv_path: 'src/scripts/ecg_with_blood_24h.csv'
-      blood_csv_path: 'src/scripts/blood_with_ecg_24h.csv'
       split: 'val'
     TRANSFORM:
       class_path: 'src.transform.transform.ComposedTransform'
       KWARGS:
         transform_config:
-          - class_path: 'src.transform.transform.Resample'
-            KWARGS:
-              input_fs: 500
-              target_fs: 400
-          - class_path: 'src.transform.transform.CenterCrop'
-            KWARGS:
-              size: 2700
           - class_path: 'src.transform.transform.NanToZero'
-          - class_path: 'src.transform.transform.HighPassButterworth'
-          - class_path: 'src.transform.transform.SoftNormalize'
           - class_path: 'src.transform.transform.DropChannels'
           - class_path: 'src.transform.transform.AddGaussianNoise'
