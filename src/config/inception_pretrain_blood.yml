@@ -53,23 +53,19 @@ HYPERPARAMETER_SEARCH:
         num_out_channels:
           SAMPLE_TYPE: 'ray.tune.choice'
           KWARGS:
-            categories: [32, 64, 96]
+            categories: [64, 96, 128]
     TRAIN.OPTIMIZER:
       KWARGS:
         bin_smoothing_factor:
           SAMPLE_TYPE: 'ray.tune.choice'
           KWARGS:
-            categories: [0.0, 0.1, 1.0, 10.0]
-        lr:
-          SAMPLE_TYPE: 'ray.tune.choice'
-          KWARGS:
-            categories: [0.001, 0.0037]
+            categories: [0.0, 1.0, 10.0]
     DATALOADER:
       KWARGS:
         batch_size:
           SAMPLE_TYPE: 'ray.tune.choice'
           KWARGS:
-            categories: [64, 128, 256]
+            categories: [16, 32, 64]
   #       lr:
   #         SAMPLE_TYPE: 'ray.tune.loguniform'
   #         KWARGS:
@@ -105,6 +101,10 @@ DATASET:
           - class_path: 'src.transform.transform.NanToZero'
           - class_path: 'src.transform.transform.DropChannels'
           - class_path: 'src.transform.transform.AddGaussianNoise'
+          - class_path: 'src.transform.transform.Resample'
+            KWARGS:
+              input_fs: 500
+              target_fs: 400
   VAL:
     KWARGS:
       split: 'val'
@@ -115,3 +115,7 @@ DATASET:
           - class_path: 'src.transform.transform.NanToZero'
           - class_path: 'src.transform.transform.DropChannels'
           - class_path: 'src.transform.transform.AddGaussianNoise'
+          - class_path: 'src.transform.transform.Resample'
+            KWARGS:
+              input_fs: 500
+              target_fs: 400
