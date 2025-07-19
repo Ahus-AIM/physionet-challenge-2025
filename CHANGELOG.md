@@ -1,6 +1,37 @@
 # CHANGELOG
 
 
+## v0.7.0 (2025-07-19)
+
+### Bug Fixes
+
+* fix: update weights for submission 4 ([`74a29d1`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/74a29d18b8fd7354321eb30e00871f9b1dd15a1f))
+
+* fix: add try catch in plotting script ([`1ce2f9b`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/1ce2f9bd32aea758a7fdc82b74c45a7123fb6496))
+
+* fix: update search space for bloodtest pretraining ([`e9080a4`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/e9080a4705bfe29f28ef2f731d14c69e80c8fbbe))
+
+* fix: reduce lr for finetuning ([`57161cc`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/57161ccd67c5005d409a5e7de043a09f28bf1ef3))
+
+### Documentation
+
+* docs: update licence ([`27e91ad`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/27e91ad7d7998c269be21500aa11058f243a5da6))
+
+* docs: update readme ([`cb22bd8`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/cb22bd8a25c5bc9d9ce5eb0174644dd333f9c510))
+
+### Features
+
+* feat: add magnitude scaling transform ([`8f986e0`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/8f986e0c13345589e5e7f0874ac22901819df001))
+
+* feat: add tabulate for ray run summary ([`f2c8f2d`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/f2c8f2d366e4d1c2b6da8d94439f651c5094e870))
+
+### Unknown
+
+* Merge pull request #14 from Ahus-AIM/submission-4
+
+Submission 4 ([`f2936b4`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/f2936b48b4ad80f683eeff34d1a637b4cdfcccd9))
+
+
 ## v0.6.0 (2025-07-17)
 
 ### Bug Fixes
