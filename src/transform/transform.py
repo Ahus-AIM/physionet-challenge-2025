@@ -218,3 +218,13 @@ class Resample(torch.nn.Module):
         # convert back to torch tensor
         y = torch.tensor(y_np, dtype=x.dtype, device=orig_dev)
         return y
+
+
+class RandomMultiply(torch.nn.Module):
+    def __init__(self, min_value: float = 0.8, max_value: float = 1.2) -> None:
+        self.min_value = min_value
+        self.max_value = max_value
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        multiplier = self.min_value + np.random.rand() * (self.max_value - self.min_value)
+        return x * multiplier
