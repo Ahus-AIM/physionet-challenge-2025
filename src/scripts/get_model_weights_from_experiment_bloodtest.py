@@ -104,6 +104,7 @@ def main() -> None:
 
     # Group trial dirs by val_fold
     best_score = None
+    best_trial = None
     for trial_dir in os.listdir(exp_path):
         trial_dir_path = os.path.join(exp_path, trial_dir)
         if not os.path.isdir(trial_dir_path):
@@ -119,7 +120,8 @@ def main() -> None:
         if best_trial is None or best_epoch is None or best_score is None:
             continue
 
-    checkpoint_path, actual_epoch = find_checkpoint_dir(best_trial, best_epoch)
+    best_trial_str = str(best_trial)
+    checkpoint_path, actual_epoch = find_checkpoint_dir(best_trial_str, best_epoch)
     best_prefix = f"{selected}_checkpoint_{actual_epoch:06d}"
 
     print(f"Copying checkpoint files for (best score {best_score:.4f}, epoch {actual_epoch}):")
