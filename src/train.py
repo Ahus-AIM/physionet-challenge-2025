@@ -65,7 +65,10 @@ def run_epoch(
         with torch.set_grad_enabled(not eval):
             if optimizer:
                 optimizer.zero_grad()
-            predictors = predictors.to(device)
+            if isinstance(predictors, torch.Tensor):
+                predictors = predictors.to(device)
+            else:
+                predictors = (predictors[0].to(device), predictors[1], predictors[2])
             target = target.to(device)
             with torch.autocast(device_type=str(device), enabled=mixed_precision_scaler is not None):
                 output = model(predictors)

@@ -1,5 +1,5 @@
 import os
-from typing import Any, List, Optional, Tuple
+from typing import Any, List, Optional, Tuple, Union
 
 import numpy as np
 import torch
@@ -7,7 +7,17 @@ import wfdb
 from torch.utils.data import Dataset
 from tqdm import tqdm
 
-from helper_code import label_string, load_text
+try:
+    from helper_code import age_string, label_string, load_text, sex_string
+except ImportError:
+    age_string = "# Age:"
+    sex_string = "# Sex:"
+    label_string = "# Chagas label:"
+
+    def load_text(filename: str) -> str:
+        with open(filename, "r") as f:
+            string = f.read()
+        return string
 
 
 class WFDBDataset(Dataset[Tuple[torch.Tensor, torch.Tensor]]):
@@ -20,6 +30,7 @@ class WFDBDataset(Dataset[Tuple[torch.Tensor, torch.Tensor]]):
         val_fold: int = 0,
         use_val: bool = False,
         shuffle_seed: int = 42,
+        return_demographics: bool = False,
     ) -> None:
         self.root_dir = os.path.expanduser(root_dir)
         self.transform = transform
@@ -29,6 +40,7 @@ class WFDBDataset(Dataset[Tuple[torch.Tensor, torch.Tensor]]):
         self.val_fold = val_fold
         self.use_val = use_val
         self.shuffle_seed = shuffle_seed
+        self.return_demographics = return_demographics
 
         self.records: List[str] = []
 
@@ -67,7 +79,26 @@ class WFDBDataset(Dataset[Tuple[torch.Tensor, torch.Tensor]]):
     def __len__(self) -> int:
         return len(self.records)
 
-    def __getitem__(self, idx: int) -> Tuple[torch.Tensor, torch.Tensor]:
+    def get_age(self, header: str) -> int:
+        """Extracts the age from the header."""
+        try:
+            age_str = header.split(age_string)[1].split("\n")[0]
+            return int(age_str)
+        except (IndexError, ValueError):
+            return -1
+
+    def get_sex(self, header: str) -> int:
+        """Extracts the sex from the header."""
+        try:
+            sex_str = header.split(sex_string)[1].split("\n")[0]
+            sex_integer = 1 if sex_str.lower().startswith("m") else 0
+            return sex_integer
+        except IndexError:
+            return -1
+
+    def __getitem__(  # type: ignore
+        self, idx: int
+    ) -> Union[Tuple[torch.Tensor, torch.Tensor], Tuple[Tuple[torch.Tensor, int, int], torch.Tensor]]:
         record_path = self.records[idx]
         label = torch.Tensor([self.get_chagas_label(idx)])
         record = wfdb.rdrecord(record_path)
@@ -76,6 +107,11 @@ class WFDBDataset(Dataset[Tuple[torch.Tensor, torch.Tensor]]):
             return self.__getitem__((idx + 1) % len(self))
         if self.transform:
             signal = self.transform(signal)
+        if self.return_demographics:
+            header = load_text(record_path + ".hea")
+            age = self.get_age(header)
+            sex = self.get_sex(header)
+            return (signal, age, sex), label
         return signal, label
 
     def get_chagas_label(self, idx: int) -> int:
