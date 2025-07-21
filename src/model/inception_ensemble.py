@@ -26,6 +26,11 @@ class InceptionEnsemble(torch.nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         outputs = [model(x) for model in self.models]
+        # To avoid homogenizing the ensemble members, detach all but one output
+        keep_gradient_index = torch.randint(0, len(outputs), (1,)).item()
+        for i, output in enumerate(outputs):
+            if i != keep_gradient_index:
+                outputs[i] = output.detach()
         return torch.stack(outputs, dim=1).mean(dim=1)
 
     def load_weights(self, path: str) -> None:
