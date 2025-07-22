@@ -1,6 +1,31 @@
 # CHANGELOG
 
 
+## v0.8.0 (2025-07-22)
+
+### Bug Fixes
+
+* fix: update weights for submission 5 ([`60e718e`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/60e718e6aa1e9db9c113b72be8b01a62477bd4dd))
+
+* fix: only update one ensemble member per batch ([`d607834`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/d60783466007099828552dddb6c8964f0d0a5ff5))
+
+* fix: add fallback in case transforms are imported from notebooks ([`7a18677`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/7a18677866382bae9ccb05127490d8e65f9f94b0))
+
+* fix: z-normalize signals in inference ([`d583e71`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/d583e7159d73c585137b9e7928ac9b97722a1371))
+
+* fix: update train configs for submission 5 ([`d82a688`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/d82a688adef864c7384384268939375bd79f4e2f))
+
+### Features
+
+* feat: add support for demographics in dataloader ([`426b4ae`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/426b4aeaa33e75a6b128269dde66a23e8c869c30))
+
+### Unknown
+
+* Merge pull request #15 from Ahus-AIM/submission-5
+
+Submission 5 ([`9b553cb`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/9b553cbadc9c25e60347751263dfb718740b04c3))
+
+
 ## v0.7.0 (2025-07-19)
 
 ### Bug Fixes
