@@ -4,7 +4,10 @@ import numpy as np
 import scipy.signal as signal
 import torch
 
-from src.utils import import_class_from_path
+try:
+    from src.utils import import_class_from_path
+except ImportError:
+    from utils import import_class_from_path  # type: ignore
 
 
 class HighPassButterworth(torch.nn.Module):

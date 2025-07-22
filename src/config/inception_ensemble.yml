@@ -21,7 +21,7 @@ TRAIN:
   OPTIMIZER:
     class_path: 'src.optimizer.adammuon.AdamMuon'
     KWARGS:
-      lr: 0.00001
+      lr: 0.001
   MIXED_PRECISION_SCALER:
     class_path: 'torch.amp.GradScaler'
     KWARGS: {}
@@ -64,6 +64,7 @@ DATASET:
               size: 2700
           - class_path: 'src.transform.transform.NanToZero'
           - class_path: 'src.transform.transform.DropChannels'
+          - class_path: 'src.transform.transform.Normalize'
   VAL:
     KWARGS:
       root_dir: '/dataset/GeorgeMoodyChallenge2025/'
@@ -76,3 +77,4 @@ DATASET:
               size: 2700
           - class_path: 'src.transform.transform.NanToZero'
           - class_path: 'src.transform.transform.DropChannels'
+          - class_path: 'src.transform.transform.Normalize'

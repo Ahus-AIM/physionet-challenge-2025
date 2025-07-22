@@ -109,6 +109,7 @@ def process_signal(signal: NDArray[Any], header: str) -> Tuple[NDArray[Any], boo
     rate: float = get_sampling_frequency(header)  # type: ignore
     target_rate: float = 400.0
     signal = resample_signal(signal, rate, target_rate)
+    signal = normalize_signal(signal)
 
     return signal, signal_has_values
 
