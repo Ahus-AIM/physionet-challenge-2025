@@ -3,7 +3,7 @@ MODEL:
   KWARGS:
     num_out_channels: 96
 LOAD_MODEL:
-  weights_path: '/home/stenheli/projects/physionet-challenge-2025/sandbox/checkpoint_epoch_2.pt'
+  weights_path: '/home/stenheli/projects/physionet-challenge-2025/sandbox/checkpoint_epoch_3.pt'
   drop_last_fc: True
 TRAIN:
   LR_SCHEDULER:
@@ -86,25 +86,23 @@ DATASET:
       class_path: 'src.transform.transform.ComposedTransform'
       KWARGS:
         transform_config:
+          - class_path: 'src.transform.transform.NanToZero'
+          - class_path: 'src.transform.transform.DropChannels'
+          - class_path: 'src.transform.transform.CropZeroPadded'
           - class_path: 'src.transform.transform.RandomCrop'
             KWARGS:
-              size: 2700
-          # - class_path: 'src.transform.transform.HighPassButterworth'
-          # - class_path: 'src.transform.transform.SoftNormalize'
-          - class_path: 'src.transform.transform.DropChannels'
+              size: 800
           - class_path: 'src.transform.transform.Normalize'
-          - class_path: 'src.transform.transform.RandomMultiply'
-  VAL:
     KWARGS:
       root_dir: '/dataset/GeorgeMoodyChallenge2025/'
     TRANSFORM:
       class_path: 'src.transform.transform.ComposedTransform'
       KWARGS:
         transform_config:
-          - class_path: 'src.transform.transform.CenterCrop'
-            KWARGS:
-              size: 2700
-          # - class_path: 'src.transform.transform.HighPassButterworth'
-          # - class_path: 'src.transform.transform.SoftNormalize'
+          - class_path: 'src.transform.transform.NanToZero'
           - class_path: 'src.transform.transform.DropChannels'
+          - class_path: 'src.transform.transform.CropZeroPadded'
+          - class_path: 'src.transform.transform.RandomCrop'
+            KWARGS:
+              size: 800
           - class_path: 'src.transform.transform.Normalize'
