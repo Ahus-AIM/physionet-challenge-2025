@@ -184,6 +184,28 @@ class NanToZero(torch.nn.Module):
         return torch.nan_to_num(x, nan=0.0)
 
 
+class CropZeroPadded(torch.nn.Module):
+    def __init__(self, min_num_samples: int = 1200) -> None:
+        """
+        Crops zero-padded signals to remove leading and trailing zeros.
+        """
+        super(CropZeroPadded, self).__init__()
+        self.min_num_samples = min_num_samples
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        stddev = torch.std(x, dim=0)
+        nonzero_indices = torch.nonzero(stddev)[:, 0]
+        if nonzero_indices.numel() < 100:
+            print("The signal is all zeros...")
+            return x
+        first_nonzero = int(torch.min(nonzero_indices))
+        last_nonzero = int(torch.max(nonzero_indices)) + 1
+        if last_nonzero - first_nonzero < self.min_num_samples:
+            print("The signal is (almost) all zeros...")
+            return x
+        return x[:, first_nonzero:last_nonzero]
+
+
 class Resample(torch.nn.Module):
     def __init__(self, input_fs: float = 500.0, target_fs: float = 400.0) -> None:
         """

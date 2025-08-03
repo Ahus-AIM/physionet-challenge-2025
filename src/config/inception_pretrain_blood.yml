@@ -67,19 +67,13 @@ HYPERPARAMETER_SEARCH:
   #         SAMPLE_TYPE: 'ray.tune.choice'
   #         KWARGS:
   #           categories: [16, 32, 64]
-  #       lr:
-  #         SAMPLE_TYPE: 'ray.tune.loguniform'
-  #         KWARGS:
-  #           lower: 0.0005
-  #           upper: 0.005
-  # # ------------- (un)comment to enable hyperparameter search -------------
 
 DATALOADER:
   class_path: 'torch.utils.data.DataLoader'
   KWARGS:
     batch_size: 64
     shuffle: True
-    num_workers: 10
+    num_workers: 25
     pin_memory: True
     drop_last: True
     persistent_workers: True
@@ -101,13 +95,16 @@ DATASET:
         transform_config:
           - class_path: 'src.transform.transform.NanToZero'
           - class_path: 'src.transform.transform.DropChannels'
+          - class_path: 'src.transform.transform.CropZeroPadded'
           - class_path: 'src.transform.transform.AddGaussianNoise'
           - class_path: 'src.transform.transform.Resample' # Pretraining is done at 500 Hz, but chagas data (CODE15% and SaMi-Trop) is 400 Hz
             KWARGS:
               input_fs: 500
               target_fs: 400
+          - class_path: 'src.transform.transform.RandomCrop'
+            KWARGS:
+              size: 800
           - class_path: 'src.transform.transform.Normalize'
-          - class_path: 'src.transform.transform.RandomMultiply'
   VAL:
     KWARGS:
       split: 'val'
@@ -117,9 +114,13 @@ DATASET:
         transform_config:
           - class_path: 'src.transform.transform.NanToZero'
           - class_path: 'src.transform.transform.DropChannels'
+          - class_path: 'src.transform.transform.CropZeroPadded'
           - class_path: 'src.transform.transform.AddGaussianNoise'
           - class_path: 'src.transform.transform.Resample'
             KWARGS:
               input_fs: 500
               target_fs: 400
+          - class_path: 'src.transform.transform.RandomCrop'
+            KWARGS:
+              size: 800
           - class_path: 'src.transform.transform.Normalize'

@@ -59,11 +59,12 @@ DATASET:
       class_path: 'src.transform.transform.ComposedTransform'
       KWARGS:
         transform_config:
-          - class_path: 'src.transform.transform.RandomCrop'
-            KWARGS:
-              size: 2700
           - class_path: 'src.transform.transform.NanToZero'
           - class_path: 'src.transform.transform.DropChannels'
+          - class_path: 'src.transform.transform.CropZeroPadded'
+          - class_path: 'src.transform.transform.RandomCrop'
+            KWARGS:
+              size: 800
           - class_path: 'src.transform.transform.Normalize'
   VAL:
     KWARGS:
@@ -72,9 +73,10 @@ DATASET:
       class_path: 'src.transform.transform.ComposedTransform'
       KWARGS:
         transform_config:
-          - class_path: 'src.transform.transform.CenterCrop'
-            KWARGS:
-              size: 2700
           - class_path: 'src.transform.transform.NanToZero'
           - class_path: 'src.transform.transform.DropChannels'
+          - class_path: 'src.transform.transform.CropZeroPadded'
+          - class_path: 'src.transform.transform.RandomCrop'
+            KWARGS:
+              size: 800
           - class_path: 'src.transform.transform.Normalize'
