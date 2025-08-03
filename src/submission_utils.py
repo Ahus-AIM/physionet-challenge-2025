@@ -3,7 +3,7 @@ from typing import Any, Tuple
 import numpy as np
 import torch
 from numpy.typing import NDArray
-from scipy.signal import butter, lfilter, resample_poly
+from scipy.signal import resample_poly
 
 from helper_code import (
     get_sampling_frequency,
@@ -12,42 +12,6 @@ from helper_code import (
     load_signals,
     reorder_signal,
 )
-
-
-def bandpass_and_resample(
-    signal: NDArray[Any], rate: float, target_rate: float, lowcut: float, highcut: float
-) -> NDArray[Any]:
-    """
-    Bandpass filter the data between lowcut and highcut, and then resample to target_rate.
-    """
-    padded_signal = np.concatenate([signal[:, ::-1], signal, signal[:, ::-1]], axis=1)
-    nyquist = 0.5 * rate
-    low = lowcut / nyquist
-    high = highcut / nyquist
-
-    if low <= 0.0:
-        print(f"Lowcut {lowcut} is too low for the sampling frequency {rate}. Setting to 0.0.")
-        low = 1e-5
-    if high >= 1.0:
-        print(f"Highcut {highcut} is too high for the sampling frequency {rate}. Setting to 1.0.")
-        high = 1 - 1e-5
-
-    b, a = butter(1, [low, high], btype="band")
-    padded_filtered = lfilter(b, a, padded_signal, axis=1)
-
-    resampled_signal: NDArray[Any]
-    if rate == target_rate:
-        signal_length = padded_filtered.shape[1] // 3
-        resampled_signal = padded_filtered[:, signal_length : 2 * signal_length]
-        return resampled_signal
-    else:  # Resample using polyphase filtering
-        up = int(target_rate)
-        down = int(rate)
-        padded_resampled = resample_poly(padded_filtered, up, down, axis=1)
-
-        signal_length = padded_resampled.shape[1] // 3
-        resampled_signal = padded_resampled[:, signal_length : 2 * signal_length]
-        return resampled_signal
 
 
 def resample_signal(signal: NDArray[Any], rate: float, target_rate: float) -> NDArray[Any]:
@@ -74,10 +38,9 @@ def detect_zero_padding(signal: NDArray[Any]) -> Tuple[int, int, bool]:
     return first_nonzero, last_nonzero, True
 
 
-def normalize_signal(signal: NDArray[Any]) -> NDArray[Any]:
-    mean = np.mean(signal, axis=1, keepdims=True)
-    std = np.std(signal, axis=1, keepdims=True)
-    std = np.clip(std, a_min=1e-5, a_max=None)
+def normalize_signal(signal: torch.Tensor) -> torch.Tensor:
+    mean: torch.Tensor = torch.mean(signal, dim=2, keepdim=True)
+    std: torch.Tensor = torch.std(signal, dim=2, keepdim=True).clamp(min=1e-5)
     signal = (signal - mean) / std
     return signal
 
@@ -104,12 +67,12 @@ def process_signal(signal: NDArray[Any], header: str) -> Tuple[NDArray[Any], boo
     # Crop the signal if there is zero padding
     first_nonzero, last_nonzero, signal_has_values = detect_zero_padding(signal)
     signal = signal[:, first_nonzero:last_nonzero]
+    signal = reorder_channels(signal, header)
 
     # Bandpass and resample filter the signal
     rate: float = get_sampling_frequency(header)  # type: ignore
     target_rate: float = 400.0
     signal = resample_signal(signal, rate, target_rate)
-    signal = normalize_signal(signal)
 
     return signal, signal_has_values
 
@@ -122,8 +85,28 @@ def classify_from_record(record: str, model: torch.nn.Module) -> Tuple[int, floa
     signal = drop_channels(signal, int(model.num_in_channels))  # type: ignore
     signal_tensor = torch.tensor(signal, dtype=torch.float32).unsqueeze(0)
 
-    logit = model(signal_tensor)
-    probability_output = torch.sigmoid(logit).item()
+    num_chunks = 10
+    chunk_size_samples = 800
+    signal_size = signal_tensor.shape[2]
+    jump_size = (signal_size - chunk_size_samples) // num_chunks
+
+    signal_tensor_chunks = []
+    for i in range(num_chunks):
+        start = i * jump_size
+        end = start + chunk_size_samples
+        if end > signal_size:
+            break
+        signal_tensor_chunk = signal_tensor[:, :, start:end]
+        signal_tensor_chunks.append(signal_tensor_chunk)
+
+    probability_outputs = []
+    for signal_tensor_chunk in signal_tensor_chunks:
+        signal_tensor_chunk = normalize_signal(signal_tensor_chunk)
+
+        probability = model(signal_tensor_chunk, sigmoid_first=True)
+        probability_outputs.append(probability.mean().item())
+
+    probability_output = np.mean(probability_outputs)
 
     probability_threshold = 0.5
     binary_output = int(probability_output > probability_threshold)
@@ -133,3 +116,8 @@ def classify_from_record(record: str, model: torch.nn.Module) -> Tuple[int, floa
         binary_output = 0
 
     return binary_output, probability_output
+
+
+if __name__ == "__main__":
+    record = "path/to/record"
+    model = torch.load("path/to/model.pth")
