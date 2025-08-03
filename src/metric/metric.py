@@ -20,6 +20,7 @@ def fix_input(logits_list: TensorOrList, labels_list: TensorOrList) -> Tuple[tor
         raise ValueError("labels and logits must be 1D tensors")
     if labels.shape != logits.shape:
         raise ValueError("labels and logits must have the same shape")
+    labels = (labels > 0.5).float()
     return logits, labels
 
 
@@ -96,25 +97,12 @@ def topk_accuracy(
 def challenge_score(
     logits_list: TensorOrList,
     labels_list: TensorOrList,
-    max_fraction_positive: float = 0.05,
+    alpha: float = 0.05,
 ) -> float:
-
     logits, labels = fix_input(logits_list, labels_list)
-
-    num_instances = labels.size(0)
-    max_num_positive_instances = int(max_fraction_positive * num_instances)
-
-    sorted_logits, indices = torch.sort(logits, descending=True)
-    sorted_labels = labels[indices]
-
-    tp = torch.cumsum(sorted_labels, dim=0)
-    fp = torch.cumsum(1 - sorted_labels, dim=0)
-    fn = tp[-1] - tp
-
-    threshold_idx = torch.searchsorted(tp + fp, max_num_positive_instances, right=True)
-    tpr = (tp[threshold_idx] / (tp[threshold_idx] + fn[threshold_idx])).item() if tp[-1] > 0 else float("nan")
-
-    return float(tpr)
+    k = int(alpha * len(labels))
+    topk_indices = torch.topk(logits, k).indices
+    return labels[topk_indices].sum().item() / labels.sum().clamp(min=1).item()
 
 
 def aucroc(logits_list: List[torch.Tensor] | torch.Tensor, labels_list: List[torch.Tensor] | torch.Tensor) -> float:
