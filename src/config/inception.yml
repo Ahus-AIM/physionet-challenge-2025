@@ -10,19 +10,19 @@ TRAIN:
     class_path: 'src.utils.CosineToConstantLR'
     KWARGS:
       T_max: 10000
-      eta_min_divisor: 2.0
+      eta_min_divisor: 1.0
   CUDNN_BENCHMARK: True
   COMPILE: True
   STOPPER:
     class_path: 'src.utils.EarlyStopper'
     KWARGS:
       metric: 'val_loss'
-      patience: 2
+      patience: 3
       delta: 0
   OPTIMIZER:
     class_path: 'src.optimizer.adammuon.AdamMuon'
     KWARGS:
-      lr: 0.001
+      lr: 0.00037
   MIXED_PRECISION_SCALER:
     class_path: 'torch.amp.GradScaler'
     KWARGS: {}
@@ -40,29 +40,14 @@ HYPERPARAMETER_SEARCH:
 
   # SEARCH_SPACE: False
 
-  # # ------------- (un)comment to enable hyperparameter search -------------
+  # ------------- (un)comment to enable hyperparameter search -------------
   SEARCH_SPACE:
     DATASET:
       KWARGS:
         val_fold:
-          SAMPLE_TYPE: 'ray.tune.choice'
+          SAMPLE_TYPE: 'ray.tune.grid_search'
           KWARGS:
-            categories: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-  #   MODEL:
-  #     class_path: 'src.model.inception.InceptionNetworkWithDownsampling'
-  #     KWARGS:
-  #       num_out_channels:
-  #         SAMPLE_TYPE: 'ray.tune.choice'
-  #         KWARGS:
-  #           categories: [32, 64, 128]
-  #   TRAIN.OPTIMIZER:
-  #     KWARGS:
-  #       lr:
-  #         SAMPLE_TYPE: 'ray.tune.loguniform'
-  #         KWARGS:
-  #           lower: 0.0005
-  #           upper: 0.005
-  # # ------------- (un)comment to enable hyperparameter search -------------
+            values: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 
 DATALOADER:
   class_path: 'torch.utils.data.DataLoader'
@@ -79,6 +64,7 @@ DATASET:
   KWARGS:
     k_folds: 10
     val_fold: 0
+    reweighting_csv: '/dataset/GeorgeMoodyChallenge2025/code15/patient_ids_both_positive_and_negative_chagas.csv'
   TRAIN:
     KWARGS:
       root_dir: '/dataset/GeorgeMoodyChallenge2025/'

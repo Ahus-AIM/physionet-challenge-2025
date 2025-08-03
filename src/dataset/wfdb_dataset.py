@@ -2,6 +2,7 @@ import os
 from typing import Any, List, Optional, Tuple, Union
 
 import numpy as np
+import pandas as pd
 import torch
 import wfdb
 from torch.utils.data import Dataset
@@ -31,10 +32,17 @@ class WFDBDataset(Dataset[Tuple[torch.Tensor, torch.Tensor]]):
         use_val: bool = False,
         shuffle_seed: int = 42,
         return_demographics: bool = False,
+        reweighting_csv: Optional[str] = None,
     ) -> None:
         self.root_dir = os.path.expanduser(root_dir)
         self.transform = transform
         self.max_num_samples = max_num_samples
+        self.reweighting_df: Optional[pd.DataFrame] = None
+        if reweighting_csv is not None:
+            self.reweighting_df = pd.read_csv(reweighting_csv, dtype=str)
+            print(f"Reweighting DataFrame loaded with {len(self.reweighting_df)} entries.")
+        else:
+            print("No reweighting DataFrame provided, using default labels.")
 
         self.k_folds = k_folds
         self.val_fold = val_fold
@@ -96,6 +104,14 @@ class WFDBDataset(Dataset[Tuple[torch.Tensor, torch.Tensor]]):
         except IndexError:
             return -1
 
+    def get_patient_id(self, header: str) -> str:
+        """Extracts the patient ID from the header."""
+        try:
+            patient_id = header.split("# Patient ID:")[1].split("\n")[0].strip()
+            return patient_id
+        except IndexError:
+            return "unknown"
+
     def __getitem__(  # type: ignore
         self, idx: int
     ) -> Union[Tuple[torch.Tensor, torch.Tensor], Tuple[Tuple[torch.Tensor, int, int], torch.Tensor]]:
@@ -103,6 +119,21 @@ class WFDBDataset(Dataset[Tuple[torch.Tensor, torch.Tensor]]):
         label = torch.Tensor([self.get_chagas_label(idx)])
         record = wfdb.rdrecord(record_path)
         signal = torch.tensor(record.p_signal, dtype=torch.float32).T
+
+        if self.reweighting_df is not None and self.use_val is False:
+            patient_id = self.get_patient_id(load_text(record_path + ".hea"))
+            if patient_id in self.reweighting_df["patient_id"].values:
+                label = torch.tensor(
+                    [
+                        float(
+                            self.reweighting_df[self.reweighting_df["patient_id"] == patient_id][
+                                "chagas_fraction"
+                            ].values[0]
+                        )
+                    ],
+                    dtype=torch.float32,
+                )
+
         if signal.shape[1] < 2700:
             return self.__getitem__((idx + 1) % len(self))
         if self.transform:
