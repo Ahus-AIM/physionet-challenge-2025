@@ -10,7 +10,6 @@ import torch
 import torch._dynamo
 from ray.tune import Checkpoint
 from ray.tune.analysis.experiment_analysis import ExperimentAnalysis
-from ray.tune.search.optuna import OptunaSearch
 from torch import nn
 from tqdm import tqdm
 from yacs.config import CfgNode as CN
@@ -161,7 +160,6 @@ def train(
             curr_global_metrics.append(metric_function)
         global_metrics_per_split[split_name] = curr_global_metrics
 
-    best_val_metrics = {metric.__name__: -np.inf for metric in metrics_per_split[val_split_prefix]}
     lowest_val_loss = np.inf
 
     for epoch in range(num_epochs):
@@ -201,13 +199,7 @@ def train(
 
         calculated_metrics = train_metrics | val_metrics
         curr_val_loss = val_loss / val_cases
-        is_new_best_metric = curr_val_loss < lowest_val_loss
         lowest_val_loss = min(curr_val_loss, lowest_val_loss)
-
-        for name, value in val_metrics.items():
-            if value < best_val_metrics[name]:
-                best_val_metrics[name] = value
-                is_new_best_metric = True
 
         global_metric_results = {}
         for metric in global_metrics_per_split[train_split_prefix]:
@@ -223,14 +215,13 @@ def train(
         if not use_ray:
             formatted_results = {k: f"{v:.6f}" for k, v in results.items()}
             print(f"Epoch {epoch + 1}/{num_epochs}: {formatted_results}")
-            if is_new_best_metric:
-                if not os.path.exists("sandbox"):
-                    os.mkdir("sandbox")
-                torch.save(
-                    model.state_dict(),
-                    os.path.join("sandbox", f"checkpoint_epoch_{epoch + 1}.pt"),
-                )
-        elif is_new_best_metric:
+            if not os.path.exists("sandbox"):
+                os.mkdir("sandbox")
+            torch.save(
+                model.state_dict(),
+                os.path.join("sandbox", f"checkpoint_epoch_{epoch + 1}.pt"),
+            )
+        else:
             with tempfile.TemporaryDirectory() as temp_checkpoint_dir:
                 path = os.path.join(temp_checkpoint_dir, "checkpoint.pt")
                 torch.save((model.state_dict(), optimizer.state_dict()), path)
@@ -239,8 +230,6 @@ def train(
                     results,
                     checkpoint=checkpoint,
                 )
-        else:
-            ray.tune.report(results)
 
     print(f"Train losses: {running_train_losses}")
     print(f"Val losses: {running_val_losses}")
@@ -331,15 +320,12 @@ def main(config: CN) -> Optional[ExperimentAnalysis]:
     # get different configurations each time you run the script.
     np.random.seed(42)
 
-    search_alg = OptunaSearch(metric="val_loss", mode="min")
-
     result = ray.tune.run(
         partial(load_and_train, config=config),
         resources_per_trial={"cpu": 16, "gpu": 1},
         config=ray_config,
-        num_samples=100,
+        num_samples=1,
         scheduler=scheduler,
-        search_alg=search_alg,
         stop=stopper,
     )
     return result  # type: ignore
