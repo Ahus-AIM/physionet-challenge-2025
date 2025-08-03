@@ -1,6 +1,37 @@
 # CHANGELOG
 
 
+## v0.9.0 (2025-08-03)
+
+### Bug Fixes
+
+* fix: use grid search instead of bayesian search ([`923c262`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/923c26232d2fbae2c1fe361c413f21362a353f82))
+
+* fix: update weights for submission 6 ([`d759973`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/d7599733b2a3cf958d42afe6af0df25edb1d35f4))
+
+* fix: update config files for submission 6 ([`63741f9`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/63741f9b0f63764df52a4500cb7ce4bac8b0d298))
+
+### Documentation
+
+* docs: update readme ([`8a44538`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/8a44538e31f7eb694634d1450f09bcdb913118a7))
+
+### Features
+
+* feat: add reweighting for patients with multiple ECGs ([`0ed843a`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/0ed843a77b3bbbd2367d6df20db8ea4bdc77b7e3))
+
+* feat: use 2 second crops for submission 6 ([`271c471`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/271c4717dac50009c8670901812177689c1aa364))
+
+### Refactoring
+
+* refactor: simplify calculation for challenge metric ([`88470dd`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/88470ddb093e8fdbf1b7823b8e8385bec8414184))
+
+### Unknown
+
+* Merge pull request #16 from Ahus-AIM/submission-6
+
+Submission 6 ([`c3e4ff1`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/c3e4ff1cbdbe00b4f1dde357801e564f96fd457b))
+
+
 ## v0.8.0 (2025-07-22)
 
 ### Bug Fixes
