@@ -3,7 +3,7 @@ MODEL:
   KWARGS:
     num_out_channels: 96
 LOAD_MODEL:
-  weights_path: '/home/stenheli/projects/physionet-challenge-2025/sandbox/checkpoint_epoch_3.pt'
+  weights_path: '/home/stenheli/projects/physionet-challenge-2025/sandbox/checkpoint_epoch_4.pt'
   drop_last_fc: True
 TRAIN:
   LR_SCHEDULER:
@@ -22,7 +22,7 @@ TRAIN:
   OPTIMIZER:
     class_path: 'src.optimizer.adammuon.AdamMuon'
     KWARGS:
-      lr: 0.00037
+      lr: 0.001
   MIXED_PRECISION_SCALER:
     class_path: 'torch.amp.GradScaler'
     KWARGS: {}
@@ -78,7 +78,7 @@ DATASET:
           - class_path: 'src.transform.transform.RandomCrop'
             KWARGS:
               size: 800
-          - class_path: 'src.transform.transform.Normalize'
+          - class_path: 'src.transform.transform.RandomMultiply'
     KWARGS:
       root_dir: '/dataset/GeorgeMoodyChallenge2025/'
     TRANSFORM:
@@ -88,7 +88,6 @@ DATASET:
           - class_path: 'src.transform.transform.NanToZero'
           - class_path: 'src.transform.transform.DropChannels'
           - class_path: 'src.transform.transform.CropZeroPadded'
-          - class_path: 'src.transform.transform.RandomCrop'
+          - class_path: 'src.transform.transform.CenterCrop'
             KWARGS:
               size: 800
-          - class_path: 'src.transform.transform.Normalize'

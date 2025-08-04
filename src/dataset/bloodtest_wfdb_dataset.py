@@ -1,5 +1,4 @@
 import os
-import time
 from typing import Any, Optional
 
 import pandas as pd
@@ -79,7 +78,6 @@ class BloodECGDataset(Dataset[tuple[torch.Tensor, torch.LongTensor]]):
         return len(self.ecgs)
 
     def __getitem__(self, idx: int) -> tuple[torch.Tensor, torch.Tensor]:  # type: ignore
-        time.sleep(1e-2)  # NOTE
         row = self.ecgs.iloc[idx]
         subject = int(row["subject_id"])
         ecg_time = row["charttime"]
