@@ -26,11 +26,6 @@ class InceptionEnsemble(torch.nn.Module):
 
     def forward(self, x: torch.Tensor, sigmoid_first: bool = False) -> torch.Tensor:
         outputs = [model(x) for model in self.models]
-        # To avoid homogenizing the ensemble members, detach all but one output
-        keep_gradient_index = torch.randint(0, len(outputs), (1,)).item()
-        for i, output in enumerate(outputs):
-            if i != keep_gradient_index:
-                outputs[i] = output.detach()
         if sigmoid_first:
             return torch.sigmoid(torch.stack(outputs, dim=1)).mean(dim=1)
         return torch.stack(outputs, dim=1).mean(dim=1)

@@ -246,7 +246,7 @@ class Resample(torch.nn.Module):
 
 
 class RandomMultiply(torch.nn.Module):
-    def __init__(self, min_value: float = 0.8, max_value: float = 1.2) -> None:
+    def __init__(self, min_value: float = 0.7, max_value: float = 1.3) -> None:
         self.min_value = min_value
         self.max_value = max_value
 

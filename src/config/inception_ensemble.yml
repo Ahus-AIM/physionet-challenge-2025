@@ -65,7 +65,6 @@ DATASET:
           - class_path: 'src.transform.transform.RandomCrop'
             KWARGS:
               size: 800
-          - class_path: 'src.transform.transform.Normalize'
   VAL:
     KWARGS:
       root_dir: '/dataset/GeorgeMoodyChallenge2025/'
@@ -79,4 +78,3 @@ DATASET:
           - class_path: 'src.transform.transform.RandomCrop'
             KWARGS:
               size: 800
-          - class_path: 'src.transform.transform.Normalize'
