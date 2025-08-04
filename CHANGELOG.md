@@ -1,6 +1,29 @@
 # CHANGELOG
 
 
+## v0.10.0 (2025-08-04)
+
+### Continuous Integration
+
+* ci: do not fetch full history ([`fc2d307`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/fc2d307cef62dcf715505ae39d75aa07a6b1c666))
+
+### Features
+
+* feat: update code for submission 7, no z-normalization ([`253200e`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/253200e03bcd8dd9276650b760276ba827f06b92))
+
+* feat: replace weights for submission 7 ([`3e8ea3c`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/3e8ea3c2d13e004976301984d19890d942776043))
+
+### Unknown
+
+* Merge pull request #18 from Ahus-AIM/submission-7
+
+Submission 7 ([`c5f619b`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/c5f619bc7c83532e21207d793810846af2da1b61))
+
+* Merge pull request #17 from Ahus-AIM/submission-6-fix
+
+ci: do not fetch full history ([`17c0991`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/17c0991b50164d2b19a1d266c3aab33e637719ea))
+
+
 ## v0.9.0 (2025-08-03)
 
 ### Bug Fixes
