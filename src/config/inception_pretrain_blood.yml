@@ -1,8 +1,8 @@
 MODEL:
   class_path: 'src.model.inception.InceptionNetworkWithDownsampling'
   KWARGS:
-    num_out_channels: 96
-    num_tests: 38
+    num_out_channels: 32
+    num_tests: 11
     num_bins: 100
 TRAIN:
   LR_SCHEDULER:
@@ -60,7 +60,7 @@ DATALOADER:
   KWARGS:
     batch_size: 64
     shuffle: True
-    num_workers: 25
+    num_workers: 15
     pin_memory: True
     drop_last: True
     persistent_workers: True
