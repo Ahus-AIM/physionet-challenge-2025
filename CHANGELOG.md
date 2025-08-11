@@ -1,6 +1,25 @@
 # CHANGELOG
 
 
+## v0.11.0 (2025-08-11)
+
+### Bug Fixes
+
+* fix: update weights for submission 8 ([`b1e94cf`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/b1e94cf141c429c88ebb0fa51b8fcaf558c59645))
+
+### Features
+
+* feat: add normalization again ([`c6e76f6`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/c6e76f61447476847a7df61114bc2e60dde7e0e9))
+
+* feat: update configs for submission 8 ([`756881f`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/756881f18ba335e9cc5fbc84cbf50d35ffd20b82))
+
+### Unknown
+
+* Merge pull request #19 from Ahus-AIM/submission-8
+
+Submission 8 ([`6e74830`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/6e74830703ae57ba1328c768fae7ebaf8736de91))
+
+
 ## v0.10.0 (2025-08-04)
 
 ### Continuous Integration
