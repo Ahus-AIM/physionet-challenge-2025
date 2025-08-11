@@ -1,9 +1,9 @@
 MODEL:
   class_path: 'src.model.inception.InceptionNetworkWithDownsampling'
   KWARGS:
-    num_out_channels: 96
+    num_out_channels: 32
 LOAD_MODEL:
-  weights_path: '/home/stenheli/projects/physionet-challenge-2025/sandbox/checkpoint_epoch_4.pt'
+  weights_path: '/home/stenheli/projects/physionet-challenge-2025/sandbox/checkpoint_epoch_3.pt'
   drop_last_fc: True
 TRAIN:
   LR_SCHEDULER:
@@ -47,12 +47,12 @@ HYPERPARAMETER_SEARCH:
         val_fold:
           SAMPLE_TYPE: 'ray.tune.grid_search'
           KWARGS:
-            values: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+            values: [0, 1, 2, 3, 4] #, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4]
 
 DATALOADER:
   class_path: 'torch.utils.data.DataLoader'
   KWARGS:
-    batch_size: 64
+    batch_size: 128
     shuffle: True
     num_workers: 16
     pin_memory: True
@@ -62,7 +62,7 @@ DATALOADER:
 DATASET:
   class_path: 'src.dataset.wfdb_dataset.WFDBDataset'
   KWARGS:
-    k_folds: 10
+    k_folds: 5
     val_fold: 0
     reweighting_csv: '/dataset/GeorgeMoodyChallenge2025/code15/patient_ids_both_positive_and_negative_chagas.csv'
   TRAIN:
@@ -78,7 +78,7 @@ DATASET:
           - class_path: 'src.transform.transform.RandomCrop'
             KWARGS:
               size: 800
-          - class_path: 'src.transform.transform.RandomMultiply'
+          - class_path: 'src.transform.transform.Normalize'
     KWARGS:
       root_dir: '/dataset/GeorgeMoodyChallenge2025/'
     TRANSFORM:
@@ -91,3 +91,4 @@ DATASET:
           - class_path: 'src.transform.transform.CenterCrop'
             KWARGS:
               size: 800
+          - class_path: 'src.transform.transform.Normalize'

@@ -3,7 +3,7 @@ MODEL:
   KWARGS:
     weights_dir: 'src/weights'
     inception_kwargs:
-      num_out_channels: 96
+      num_out_channels: 32
 TRAIN:
   LR_SCHEDULER:
     class_path: 'src.utils.CosineToConstantLR'
@@ -21,7 +21,7 @@ TRAIN:
   OPTIMIZER:
     class_path: 'src.optimizer.adammuon.AdamMuon'
     KWARGS:
-      lr: 0.001
+      lr: 0.0001
   MIXED_PRECISION_SCALER:
     class_path: 'torch.amp.GradScaler'
     KWARGS: {}
@@ -41,7 +41,7 @@ HYPERPARAMETER_SEARCH:
 DATALOADER:
   class_path: 'torch.utils.data.DataLoader'
   KWARGS:
-    batch_size: 32
+    batch_size: 512
     shuffle: true
     num_workers: 2
     drop_last: false
@@ -50,7 +50,7 @@ DATALOADER:
 DATASET:
   class_path: 'src.dataset.wfdb_dataset.WFDBDataset'
   KWARGS:
-    k_folds: 5
+    k_folds: 2
     val_fold: 0
   TRAIN:
     KWARGS:
@@ -65,6 +65,7 @@ DATASET:
           - class_path: 'src.transform.transform.RandomCrop'
             KWARGS:
               size: 800
+          - class_path: 'src.transform.transform.Normalize'
   VAL:
     KWARGS:
       root_dir: '/dataset/GeorgeMoodyChallenge2025/'
@@ -78,3 +79,4 @@ DATASET:
           - class_path: 'src.transform.transform.RandomCrop'
             KWARGS:
               size: 800
+          - class_path: 'src.transform.transform.Normalize'
