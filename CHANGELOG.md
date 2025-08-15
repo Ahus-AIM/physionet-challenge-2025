@@ -1,6 +1,29 @@
 # CHANGELOG
 
 
+## v0.12.0 (2025-08-15)
+
+### Bug Fixes
+
+* fix: set lr=1e-5 for ensemble training ([`f19583e`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/f19583e54c19386be3c5b4cd1ddc595f736fdaa4))
+
+### Features
+
+* feat: use 20 chunks per model in inference ([`3a7e12a`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/3a7e12a399b8a1784eee62060f780a26bdff1819))
+
+* feat: update train config ([`981f48a`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/981f48a6993d323a73540c49529370a5559f346c))
+
+* feat: update weights for submission 9 ([`3b41119`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/3b4111928cf0c050729dbfb1c9c1ba5caf55ae7a))
+
+* feat: add transform for ahus dataset conversion ([`b131f95`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/b131f9535657fca7bd7219187cc0ae225de880f1))
+
+### Unknown
+
+* Merge pull request #20 from Ahus-AIM/submission-9
+
+Submission 9 ([`cb4dbec`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/cb4dbecfac7c911e48c6f3d4d7332a1223746c19))
+
+
 ## v0.11.0 (2025-08-11)
 
 ### Bug Fixes
