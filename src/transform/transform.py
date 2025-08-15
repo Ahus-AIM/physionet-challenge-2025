@@ -253,3 +253,14 @@ class RandomMultiply(torch.nn.Module):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         multiplier = self.min_value + np.random.rand() * (self.max_value - self.min_value)
         return x * multiplier
+
+
+class ToFloatMv(torch.nn.Module):
+    def __init__(self) -> None:
+        """
+        Convert the input tensor to float type, in unit of mV.
+        """
+        super(ToFloatMv, self).__init__()
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return x.float().T / 1000.0

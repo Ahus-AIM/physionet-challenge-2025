@@ -17,7 +17,7 @@ TRAIN:
     class_path: 'src.utils.EarlyStopper'
     KWARGS:
       metric: 'val_loss'
-      patience: 3
+      patience: 7
       delta: 0
   OPTIMIZER:
     class_path: 'src.optimizer.adammuon.AdamMuon'
@@ -42,12 +42,23 @@ HYPERPARAMETER_SEARCH:
 
   # ------------- (un)comment to enable hyperparameter search -------------
   SEARCH_SPACE:
+    LOAD_MODEL:
+      weights_path:
+        SAMPLE_TYPE: 'ray.tune.grid_search'
+        KWARGS:
+          values:
+            - '/home/stenheli/projects/physionet-challenge-2025/sandbox/weights/load_and_train_2025-08-13_20-23-21_val_fold_0_checkpoint_000005.pt'
+            - '/home/stenheli/projects/physionet-challenge-2025/sandbox/weights/load_and_train_2025-08-13_20-23-21_val_fold_1_checkpoint_000004.pt'
+            - '/home/stenheli/projects/physionet-challenge-2025/sandbox/weights/load_and_train_2025-08-13_20-23-21_val_fold_2_checkpoint_000001.pt'
+            - '/home/stenheli/projects/physionet-challenge-2025/sandbox/weights/load_and_train_2025-08-13_20-23-21_val_fold_3_checkpoint_000001.pt'
+            - '/home/stenheli/projects/physionet-challenge-2025/sandbox/weights/load_and_train_2025-08-13_20-23-21_val_fold_4_checkpoint_000004.pt'
+            - '/home/stenheli/projects/physionet-challenge-2025/sandbox/checkpoint_epoch_3.pt'
     DATASET:
       KWARGS:
         val_fold:
           SAMPLE_TYPE: 'ray.tune.grid_search'
           KWARGS:
-            values: [0, 1, 2, 3, 4] #, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4]
+            values: [0, 1, 2, 3, 4]
 
 DATALOADER:
   class_path: 'torch.utils.data.DataLoader'

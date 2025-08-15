@@ -85,7 +85,7 @@ def classify_from_record(record: str, model: torch.nn.Module) -> Tuple[int, floa
     signal = drop_channels(signal, int(model.num_in_channels))  # type: ignore
     signal_tensor = torch.tensor(signal, dtype=torch.float32).unsqueeze(0)
 
-    num_chunks = 10
+    num_chunks = 22
     chunk_size_samples = 800
     signal_size = signal_tensor.shape[2]
     jump_size = (signal_size - chunk_size_samples) // num_chunks
@@ -100,7 +100,7 @@ def classify_from_record(record: str, model: torch.nn.Module) -> Tuple[int, floa
         signal_tensor_chunks.append(signal_tensor_chunk)
 
     probability_outputs = []
-    for signal_tensor_chunk in signal_tensor_chunks:
+    for signal_tensor_chunk in signal_tensor_chunks[1:-1]:
         signal_tensor_chunk = normalize_signal(signal_tensor_chunk)
 
         probability = model(signal_tensor_chunk, sigmoid_first=True)
