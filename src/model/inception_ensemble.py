@@ -20,25 +20,21 @@ class InceptionEnsemble(torch.nn.Module):
             models_list.append(model)
         self.models: torch.nn.ModuleList = torch.nn.ModuleList(models_list)
         self.num_in_channels = self.models[0].num_in_channels
-        print(
-            f"InceptionEnsemble: Loaded {len(self.models)} models from {weights_dir} with prefix {weights_startswith}"
-        )
 
-    def forward(self, x: torch.Tensor, sigmoid_first: bool = False) -> torch.Tensor:
+    def forward(self, x: torch.Tensor, sigmoid_first: bool = False, pre_sigmoid_constant: float = 0.0) -> torch.Tensor:
         outputs = [model(x) for model in self.models]
         if sigmoid_first:
-            return torch.sigmoid(torch.stack(outputs, dim=1)).mean(dim=1)
+            stacked = torch.stack(outputs, dim=1) + pre_sigmoid_constant
+            return torch.sigmoid(stacked).mean(dim=1)
         return torch.stack(outputs, dim=1).mean(dim=1)
 
     def load_weights(self, path: str) -> None:
         loaded = torch.load(path, map_location="cpu", weights_only=True)
-        if isinstance(loaded, OrderedDict):
-            # remove the keys "_orig_mod" as it is added by torch.compile
-            loaded = OrderedDict((k.replace("_orig_mod.", ""), v) for k, v in loaded.items())
-            self.load_state_dict(loaded)
-        elif isinstance(loaded, tuple):
-            loaded = loaded[0]
-            loaded = OrderedDict((k.replace("_orig_mod.", ""), v) for k, v in loaded.items())
-            self.load_state_dict(loaded)
+        if isinstance(loaded, (OrderedDict, tuple)):
+            state = loaded if isinstance(loaded, OrderedDict) else loaded[0]
+            state = OrderedDict(
+                (k.replace("_orig_mod.", ""), v) for k, v in state.items()
+            )  # Removes prefix added by torch.compile
+            self.load_state_dict(state)
         else:
             print("Could not load weights")
