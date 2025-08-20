@@ -6,6 +6,7 @@ wfdb==4.3.0
 h5py==3.14.0
 tqdm==4.67.1
 torch==2.7.1
+torchaudio==2.7.1
 ray[data,train,tune]==2.47.1
 yacs==0.1.8
 scipy==1.16.0

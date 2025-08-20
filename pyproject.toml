@@ -28,6 +28,7 @@ module = [
     "pandas.*",
     "h5py.*",
     "tqdm.*",
+    "torchaudio.*",
 ]
 ignore_missing_imports = true
 
