@@ -1,6 +1,27 @@
 # CHANGELOG
 
 
+## v0.13.0 (2025-08-20)
+
+### Bug Fixes
+
+* fix: update configs for submission 10 ([`ee91f6f`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/ee91f6f641686b3ee3e3dde5fa68f2b8e6f0df21))
+
+### Features
+
+* feat: update weights for submission 10 ([`b152ad8`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/b152ad89a48e9dd651e54d697b48f9d626f73c95))
+
+* feat: add constant to logits pre-sigmoid ([`0d92e4c`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/0d92e4ce095ab6802ee994183850d9975440575c))
+
+* feat: add random down-then-upsampling transform ([`922a686`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/922a686aaddb21704e60b83cb5a41da4307fb3cc))
+
+### Unknown
+
+* Merge pull request #21 from Ahus-AIM/submission-10
+
+Submission 10 ([`1e646ce`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/1e646cee9a264ad6a3b335e800d27a7dd80892f3))
+
+
 ## v0.12.0 (2025-08-15)
 
 ### Bug Fixes
