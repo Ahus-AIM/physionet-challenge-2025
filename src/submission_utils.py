@@ -103,7 +103,7 @@ def classify_from_record(record: str, model: torch.nn.Module) -> Tuple[int, floa
     for signal_tensor_chunk in signal_tensor_chunks[1:-1]:
         signal_tensor_chunk = normalize_signal(signal_tensor_chunk)
 
-        probability = model(signal_tensor_chunk, sigmoid_first=True)
+        probability = model(signal_tensor_chunk, sigmoid_first=True, pre_sigmoid_constant=0.8)
         probability_outputs.append(probability.mean().item())
 
     probability_output = np.mean(probability_outputs)

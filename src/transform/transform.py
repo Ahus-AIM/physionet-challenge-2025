@@ -1,8 +1,10 @@
 from typing import Any, Dict, List
 
 import numpy as np
-import scipy.signal as signal
 import torch
+import torchaudio
+from scipy import signal
+from torch import nn
 
 try:
     from src.utils import import_class_from_path
@@ -242,6 +244,84 @@ class Resample(torch.nn.Module):
         y_np = signal.resample_poly(x_np, self.up, self.down, axis=-1)
         # convert back to torch tensor
         y = torch.tensor(y_np, dtype=x.dtype, device=orig_dev)
+        return y
+
+
+class RandomResample(nn.Module):
+    """
+    Randomly degrade temporal resolution by downsampling to a random fs, then upsample back.
+
+    Args:
+        input_fs (float): Original sampling frequency (Hz).
+        output_fs (float): Desired final sampling frequency (Hz).
+        min_rand_fs (float): Minimum random intermediate fs (Hz).
+        max_rand_fs (float): Maximum random intermediate fs (Hz).
+        max_den (int): Max denominator when approximating ratios for scipy.resample_poly.
+                       Ignored when torchaudio is available. Default: 1000.
+
+    Notes:
+        - Input shape can be (B, T) or (B, C, T) or (..., T). Random fs is sampled per batch item.
+        - If torchaudio is available, this is differentiable. SciPy fallback is not.
+        - Final sequence length is forced to round(T * output_fs / input_fs) for consistency across the batch.
+    """
+
+    def __init__(
+        self,
+        input_fs: float = 400.0,
+        output_fs: float = 400.0,
+        min_rand_fs: float = 150.0,
+        max_rand_fs: float = 400.0,
+        max_den: int = 1000,
+    ):
+        super().__init__()
+        assert max_rand_fs > 0 and min_rand_fs > 0
+        assert max_rand_fs >= min_rand_fs
+        assert input_fs > 0 and output_fs > 0
+        self.input_fs = float(input_fs)
+        self.output_fs = float(output_fs)
+        self.min_fs = float(min_rand_fs)
+        self.max_fs = float(max_rand_fs)
+        self.max_den = int(max_den)
+
+    def _resample(self, x: torch.Tensor, orig_fs: float, new_fs: float) -> torch.Tensor:
+        """Resample along last axis."""
+        resampled: torch.Tensor = torchaudio.functional.resample(x, orig_freq=orig_fs, new_freq=new_fs)
+        return resampled
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Args:
+            x: Tensor with shape (B, T) or (B, C, T) or (..., T). Batch is axis 0; time is last.
+
+        Returns:
+            Tensor with same leading dims as input and time length ≈ T * output_fs / input_fs.
+        """
+        assert x.dim() >= 2, "Expected at least (B, T). Time must be last dimension."
+        B = x.shape[0]
+        T = x.shape[-1]
+        target_len = int(round(T * self.output_fs / self.input_fs))
+
+        # Process each batch item with its own random fs
+        outs = []
+        for b in range(B):
+            rfs = float(torch.empty(1).uniform_(self.min_fs, self.max_fs).item())
+            xb = x[b]  # shape: (*leading, T)
+
+            # down to random fs, then up to output_fs
+            y = self._resample(xb, self.input_fs, rfs)
+            y = self._resample(y, rfs, self.output_fs)
+
+            # enforce consistent length across batch
+            cur_len = y.shape[-1]
+            if cur_len < target_len:
+                pad = target_len - cur_len
+                y = torch.nn.functional.pad(y, (0, pad))
+            elif cur_len > target_len:
+                y = y[..., :target_len]
+
+            outs.append(y)
+
+        y = torch.stack(outs, dim=0)  # (B, *leading, target_len)
         return y
 
 
