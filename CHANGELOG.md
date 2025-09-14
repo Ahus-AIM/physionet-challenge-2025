@@ -1,6 +1,19 @@
 # CHANGELOG
 
 
+## v0.13.2 (2025-09-14)
+
+### Bug Fixes
+
+* fix: replace weights for hackathon submission 2 ([`52d949f`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/52d949f9b940429c879e19d590f3879914a9a27d))
+
+### Unknown
+
+* Merge pull request #23 from Ahus-AIM/hackathon-2
+
+fix: replace weights for hackathon submission 2 ([`cfb1569`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/cfb1569d57cc4cbc4a7ea7e7f40bdf4df41fb74c))
+
+
 ## v0.13.1 (2025-09-14)
 
 ### Bug Fixes
