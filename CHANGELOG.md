@@ -1,6 +1,21 @@
 # CHANGELOG
 
 
+## v0.13.1 (2025-09-14)
+
+### Bug Fixes
+
+* fix: decrease learning rate for ensemble ([`785d7f2`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/785d7f20c12a787f4529ac22ea21599370a0fd72))
+
+* fix: replace weights for hackathon 1 ([`1184676`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/118467691c95086552b45d9537c59a257f31ede9))
+
+### Unknown
+
+* Merge pull request #22 from Ahus-AIM/hackathon-1
+
+Reduce LR for ensemble training, initialize training with weights obtained by pre-training on diagnostic codes from MIMIC-IV. ([`cc839f2`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/cc839f2d4af518f55c19afd51305abd0aa960c64))
+
+
 ## v0.13.0 (2025-08-20)
 
 ### Bug Fixes
