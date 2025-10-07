@@ -1,7 +1,6 @@
 # Detection of Chagas Disease from the ECG: Ahus AIM's Entry for the George B. Moody PhysioNet Challenge 2025
 
-![Tests](https://github.com/Ahus-AIM/physionet-challenge-2025/actions/workflows/submission.yml/badge.svg?branch=main) [![Python](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/release/python-31211/) [![Preprint](https://img.shields.io/badge/Preprint-PDF-blue?logo=arxiv)](docs/preprint.pdf) [![Poster](https://img.shields.io/badge/Poster-PDF-orange?logo=adobeacrobatreader)](docs/poster.pdf)
-
+[![Paper](https://img.shields.io/badge/Preprint-PDF-brightgreen?logo=pdf&logoColor=white)](docs/paper.pdf) [![Poster](https://img.shields.io/badge/Poster-PDF-green?logo=pdf&logoColor=white)](docs/poster.pdf) ![Tests](https://github.com/Ahus-AIM/physionet-challenge-2025/actions/workflows/submission.yml/badge.svg?branch=main) ![Lint](https://github.com/Ahus-AIM/FLARE25/actions/workflows/lint.yml/badge.svg?branch=main) ![Commit Lint](https://github.com/Ahus-AIM/FLARE25/actions/workflows/commit_lint.yml/badge.svg?branch=main) ![](https://img.shields.io/badge/%20style-google-3666d6.svg) [![Python](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/release/python-31211/)
 
 This repository contains team Ahus AIM's entry for the [Detection of Chagas Disease from the ECG: The George B. Moody PhysioNet Challenge 2025](https://physionetchallenges.org/2025/).
 
