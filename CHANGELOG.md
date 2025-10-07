@@ -1,6 +1,23 @@
 # CHANGELOG
 
 
+## v0.14.0 (2025-10-07)
+
+### Documentation
+
+* docs: add preprint and poster ([`597100a`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/597100a8ce6edd48e02a418e51055c595599e329))
+
+### Features
+
+* feat: add paper and poster with test scores ([`71e64e1`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/71e64e1e3f85e12b1dc1d8da09c968e52d04ddc4))
+
+### Unknown
+
+* Merge pull request #24 from Ahus-AIM/new-docs
+
+feat: add paper and poster with test scores ([`ea9828f`](https://github.com/Ahus-AIM/physionet-challenge-2025/commit/ea9828f89ab66a597c497f0689e8913cd0d2511e))
+
+
 ## v0.13.2 (2025-09-14)
 
 ### Bug Fixes
